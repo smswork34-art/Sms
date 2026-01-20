@@ -1056,17 +1056,76 @@
         tg.expand();
         tg.MainButton.hide();
 
+        // База данных в localStorage
+        const userDB = {
+            getCurrentUserId: function() {
+                const tgUser = tg.initDataUnsafe?.user;
+                if (tgUser && tgUser.id) {
+                    return tgUser.id;
+                }
+                return null;
+            },
+            
+            getCurrentUserBalance: function() {
+                const userId = this.getCurrentUserId();
+                if (!userId) return { usdt: 0, ton: 0 };
+                
+                const balances = this.getAllBalances();
+                return balances[userId] || { usdt: 0, ton: 0 };
+            },
+            
+            getAllBalances: function() {
+                const balancesJson = localStorage.getItem('sms_mailing_user_balances');
+                return balancesJson ? JSON.parse(balancesJson) : {};
+            },
+            
+            updateUserBalance: function(userId, currency, amount) {
+                const balances = this.getAllBalances();
+                
+                if (!balances[userId]) {
+                    balances[userId] = { usdt: 0, ton: 0 };
+                }
+                
+                if (currency === 'USDT') {
+                    balances[userId].usdt += amount;
+                } else if (currency === 'TON') {
+                    balances[userId].ton += amount;
+                }
+                
+                localStorage.setItem('sms_mailing_user_balances', JSON.stringify(balances));
+                
+                return balances[userId];
+            },
+            
+            getAllUsers: function() {
+                const balances = this.getAllBalances();
+                const users = [];
+                
+                const paymentRequests = JSON.parse(localStorage.getItem('sms_mailing_payment_requests') || '[]');
+                const uniqueUsers = {};
+                
+                paymentRequests.forEach(payment => {
+                    if (!uniqueUsers[payment.userId]) {
+                        uniqueUsers[payment.userId] = {
+                            userId: payment.userId,
+                            username: payment.username || `user_${payment.userId}`,
+                            firstName: payment.firstName || 'Пользователь',
+                            balance: balances[payment.userId] || { usdt: 0, ton: 0 }
+                        };
+                    }
+                });
+                
+                return Object.values(uniqueUsers);
+            }
+        };
+
         // Состояние приложения
         let appState = {
-            balance: {
-                usdt: 0,
-                ton: 0
-            },
             selectedCurrency: 'USDT',
             selectedAmount: 10,
             transactions: [],
             isAdmin: false,
-            paymentRequests: [] // Массив для хранения запросов на оплату
+            paymentRequests: []
         };
 
         // DOM элементы
@@ -1097,21 +1156,17 @@
             loadUserData();
             setupEventListeners();
             
-            // Загружаем сохраненные запросы на оплату из localStorage
             loadPaymentRequestsFromStorage();
         });
 
         function setupEventListeners() {
-            // Счетчик символов в СМС
             elements.smsText.addEventListener('input', function() {
                 elements.charCount.textContent = this.value.length;
                 updateSMSCost();
             });
 
-            // Обновление стоимости при вводе номеров
             elements.phoneNumbers.addEventListener('input', updateSMSCost);
 
-            // Кастомная сумма пополнения
             elements.customAmountInput.addEventListener('input', function() {
                 const amount = parseFloat(this.value) || 0;
                 if (amount >= 10) {
@@ -1121,29 +1176,23 @@
         }
 
         function showPage(pageId) {
-            // Скрыть все страницы
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
 
-            // Показать выбранную страницу
             document.getElementById(pageId).classList.add('active');
 
-            // Обновить активную кнопку навигации
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
 
-            // Найти соответствующую кнопку навигации
             const navBtn = document.querySelector(`.nav-btn[onclick*="${pageId}"]`);
             if (navBtn) {
                 navBtn.classList.add('active');
             } else {
-                // Если страница не в навигации, сделать активной главную
                 document.querySelector('.nav-btn[onclick*="home"]').classList.add('active');
             }
 
-            // Загрузить данные для страницы
             switch(pageId) {
                 case 'history':
                     loadTransactions();
@@ -1152,7 +1201,6 @@
                     updateSMSCost();
                     break;
                 case 'deposit':
-                    // Скрыть поле ввода хеша при переходе на страницу пополнения
                     elements.hashInputSection.classList.remove('active');
                     elements.txHash.value = '';
                     break;
@@ -1167,21 +1215,15 @@
         }
 
         function loadUserData() {
-            // Здесь будет загрузка данных с сервера
-            // Временные данные для демонстрации
-            appState.balance.usdt = 25.5;
-            appState.balance.ton = 15.2;
+            const userBalance = userDB.getCurrentUserBalance();
             
-            // Обновить интерфейс
-            elements.balanceUsdt.textContent = appState.balance.usdt.toFixed(2);
-            elements.balanceTon.textContent = appState.balance.ton.toFixed(2);
+            elements.balanceUsdt.textContent = userBalance.usdt.toFixed(2);
+            elements.balanceTon.textContent = userBalance.ton.toFixed(2);
             
-            // Обновить статистику
             updateStatistics();
         }
 
         function updateStatistics() {
-            // Временные данные
             document.getElementById('total-sms').textContent = '42';
             document.getElementById('total-cost').textContent = '35.2';
             document.getElementById('success-rate').textContent = '98%';
@@ -1191,7 +1233,6 @@
         function selectCurrency(currency) {
             appState.selectedCurrency = currency;
             
-            // Обновить UI
             document.querySelectorAll('.deposit-option').forEach(option => {
                 option.classList.remove('active');
             });
@@ -1222,7 +1263,6 @@
         function selectAmount(amount) {
             appState.selectedAmount = amount;
             
-            // Обновить UI
             document.querySelectorAll('.amount-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (parseFloat(btn.textContent) === amount || 
@@ -1291,16 +1331,14 @@
                 return;
             }
             
-            // Получаем данные пользователя из Telegram
             const user = tg.initDataUnsafe?.user || {
                 id: Math.floor(Math.random() * 1000000),
                 username: 'user_' + Math.floor(Math.random() * 1000),
                 first_name: 'Пользователь'
             };
             
-            // Создаем запрос на оплату
             const paymentRequest = {
-                id: Date.now(), // уникальный ID
+                id: Date.now(),
                 userId: user.id,
                 username: user.username || `user_${user.id}`,
                 firstName: user.first_name || 'Пользователь',
@@ -1311,19 +1349,15 @@
                 status: 'pending'
             };
             
-            // Добавляем в массив запросов
             appState.paymentRequests.push(paymentRequest);
             
-            // Сохраняем в localStorage
             savePaymentRequestsToStorage();
             
             tg.showAlert(`Платеж отправлен на проверку!\nСумма: ${amount} ${currency}\nХеш: ${hash.substring(0, 20)}...\nАдмин рассмотрит ваш платеж в ближайшее время.`);
             
-            // Сбросить форму
             elements.txHash.value = '';
             elements.hashInputSection.classList.remove('active');
             
-            // Вернуться на главную
             showPage('home');
         }
 
@@ -1349,7 +1383,9 @@
             const costUSDT = count * 1;
             const costTON = count * 1.63;
             
-            if (appState.balance.usdt < costUSDT && appState.balance.ton < costTON) {
+            const userBalance = userDB.getCurrentUserBalance();
+            
+            if (userBalance.usdt < costUSDT && userBalance.ton < costTON) {
                 tg.showAlert(`Недостаточно средств!\nТребуется: ${costUSDT} USDT или ${costTON} TON`);
                 return;
             }
@@ -1379,22 +1415,18 @@
             appState.isAdmin = true;
             tg.showAlert('Доступ разрешен! Вход в админ панель...');
             
-            // Сбросить форму
             elements.adminKey.value = '';
             elements.adminAccessSection.classList.remove('active');
             
-            // Перейти в админ панель
             showPage('admin-panel');
         }
 
         function loadAdminPanel() {
-            // Загружаем начальную статистику
             document.getElementById('admin-total-users').textContent = '15';
             document.getElementById('admin-total-mailings').textContent = '42';
             document.getElementById('admin-pending').textContent = '5';
             document.getElementById('admin-total-balance').textContent = '120.5';
             
-            // Показываем начальный контент
             showAdminSection('payments');
         }
 
@@ -1417,7 +1449,6 @@
                             </div>
                         </div>
                     `;
-                    // После добавления в DOM загружаем платежи
                     setTimeout(() => {
                         loadPaymentRequests();
                     }, 0);
@@ -1487,54 +1518,17 @@
                                 <i class="fas fa-users"></i>
                                 Управление пользователями
                             </div>
-                            <div class="user-list">
-                                <div class="user-item">
-                                    <div class="user-info">
-                                        <h4>@user_ivanov</h4>
-                                        <p>ID: 123456 • Последняя активность: сегодня</p>
-                                    </div>
-                                    <div class="user-balance">
-                                        <div class="amount">25.50</div>
-                                        <div class="currency">USDT</div>
-                                    </div>
-                                </div>
-                                <div class="user-item">
-                                    <div class="user-info">
-                                        <h4>@sms_master</h4>
-                                        <p>ID: 123457 • Последняя активность: вчера</p>
-                                    </div>
-                                    <div class="user-balance">
-                                        <div class="amount">15.20</div>
-                                        <div class="currency">TON</div>
-                                    </div>
-                                </div>
-                                <div class="user-item">
-                                    <div class="user-info">
-                                        <h4>@business_owner</h4>
-                                        <p>ID: 123458 • Последняя активность: 2 дня назад</p>
-                                    </div>
-                                    <div class="user-balance">
-                                        <div class="amount">100.00</div>
-                                        <div class="currency">USDT</div>
-                                    </div>
-                                </div>
-                                <div class="user-item">
-                                    <div class="user-info">
-                                        <h4>@notification_bot</h4>
-                                        <p>ID: 123459 • Последняя активность: неделя назад</p>
-                                    </div>
-                                    <div class="user-balance">
-                                        <div class="amount">0.00</div>
-                                        <div class="currency">USDT</div>
-                                    </div>
+                            <div class="user-list" id="users-list">
+                                <div class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Загрузка пользователей...</p>
                                 </div>
                             </div>
-                            <button class="btn" style="margin-top: 15px;">
-                                <i class="fas fa-search"></i>
-                                Поиск пользователя
-                            </button>
                         </div>
                     `;
+                    setTimeout(() => {
+                        loadUsersList();
+                    }, 0);
                     break;
                     
                 case 'settings':
@@ -1574,12 +1568,10 @@
         }
 
         function savePaymentRequestsToStorage() {
-            // Сохраняем запросы на оплату в localStorage
             localStorage.setItem('sms_mailing_payment_requests', JSON.stringify(appState.paymentRequests));
         }
 
         function loadPaymentRequestsFromStorage() {
-            // Загружаем запросы на оплату из localStorage
             const savedRequests = localStorage.getItem('sms_mailing_payment_requests');
             if (savedRequests) {
                 appState.paymentRequests = JSON.parse(savedRequests);
@@ -1589,7 +1581,6 @@
         function loadPaymentRequests() {
             let html = '';
             
-            // Фильтруем только ожидающие платежи
             const pendingRequests = appState.paymentRequests.filter(p => p.status === 'pending');
             
             if (pendingRequests.length === 0) {
@@ -1642,26 +1633,55 @@
             }
         }
 
+        function loadUsersList() {
+            let html = '';
+            
+            const users = userDB.getAllUsers();
+            
+            if (users.length === 0) {
+                html = '<p style="text-align: center; color: #666; padding: 20px;">Нет пользователей</p>';
+            } else {
+                users.forEach(user => {
+                    html += `
+                        <div class="user-item">
+                            <div class="user-info">
+                                <h4>${user.firstName}</h4>
+                                <p>ID: ${user.userId} • @${user.username}</p>
+                            </div>
+                            <div class="user-balance">
+                                <div class="amount">${user.balance.usdt.toFixed(2)}</div>
+                                <div class="currency">USDT</div>
+                                <div class="amount">${user.balance.ton.toFixed(2)}</div>
+                                <div class="currency">TON</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            const listElement = document.getElementById('users-list');
+            if (listElement) {
+                listElement.innerHTML = html;
+            }
+        }
+
         function confirmPayment(paymentId) {
-            // Находим платеж в массиве
             const paymentIndex = appState.paymentRequests.findIndex(p => p.id === paymentId);
             if (paymentIndex === -1) return;
             
             const payment = appState.paymentRequests[paymentIndex];
             
-            // Обновляем статус платежа
             appState.paymentRequests[paymentIndex].status = 'confirmed';
             
-            // Сохраняем изменения
+            userDB.updateUserBalance(payment.userId, payment.currency, payment.amount);
+            
             savePaymentRequestsToStorage();
             
-            // Обновляем отображение
             const paymentElement = document.getElementById(`payment-${paymentId}`);
             if (paymentElement) {
                 paymentElement.style.borderColor = '#00c851';
                 paymentElement.style.background = '#f0fff4';
                 
-                // Показываем статус
                 const statusDiv = document.createElement('div');
                 statusDiv.style.marginTop = '10px';
                 statusDiv.style.padding = '8px';
@@ -1674,33 +1694,27 @@
                 
                 paymentElement.querySelector('.payment-request > div:first-child').appendChild(statusDiv);
                 
-                // Скрываем кнопки
                 paymentElement.querySelector('div:last-child').style.display = 'none';
                 
-                tg.showAlert(`Платеж #${paymentId} подтвержден! Баланс пользователя пополнен.`);
+                tg.showAlert(`Платеж #${paymentId} подтвержден! Баланс пользователя ${payment.firstName} пополнен на ${payment.amount} ${payment.currency}.`);
             }
         }
 
         function cancelPayment(paymentId) {
-            // Находим платеж в массиве
             const paymentIndex = appState.paymentRequests.findIndex(p => p.id === paymentId);
             if (paymentIndex === -1) return;
             
             const payment = appState.paymentRequests[paymentIndex];
             
-            // Обновляем статус платежа
             appState.paymentRequests[paymentIndex].status = 'cancelled';
             
-            // Сохраняем изменения
             savePaymentRequestsToStorage();
             
-            // Обновляем отображение
             const paymentElement = document.getElementById(`payment-${paymentId}`);
             if (paymentElement) {
                 paymentElement.style.borderColor = '#ff4444';
                 paymentElement.style.background = '#fff0f0';
                 
-                // Показываем статус
                 const statusDiv = document.createElement('div');
                 statusDiv.style.marginTop = '10px';
                 statusDiv.style.padding = '8px';
@@ -1713,10 +1727,9 @@
                 
                 paymentElement.querySelector('.payment-request > div:first-child').appendChild(statusDiv);
                 
-                // Скрываем кнопки
                 paymentElement.querySelector('div:last-child').style.display = 'none';
                 
-                tg.showAlert(`Платеж #${paymentId} отменен! Пользователю отправлено уведомление.`);
+                tg.showAlert(`Платеж #${paymentId} отменен! Пользователю ${payment.firstName} отправлено уведомление.`);
             }
         }
 
@@ -1761,7 +1774,6 @@
             elements.transactionsList.innerHTML = html || '<div class="loading"><p>Нет транзакций</p></div>';
         }
 
-        // Инициализация при загрузке
         loadUserData();
         updateSMSCost();
     </script>
