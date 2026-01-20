@@ -1818,7 +1818,7 @@
         }
 
         function loadAdminRequests() {
-            // ПОКАЗЫВАЕМ ВСЕ ЗАЯВКИ ОТ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ
+            // ПОКАЗЫВАЕМ ВСЕ ЗАЯВКИ ОТ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ (и pending, и approved, и rejected)
             const allRequests = mailingDB.getAllRequests();
             const pendingRequests = allRequests.filter(request => request.status === 'pending');
             
@@ -1826,19 +1826,59 @@
             
             let html = '';
             
-            if (pendingRequests.length === 0) {
+            if (allRequests.length === 0) {
                 html = '<p style="text-align: center; color: #666; padding: 20px;">Нет заявок на рассылку</p>';
             } else {
-                pendingRequests.forEach(request => {
+                allRequests.forEach(request => {
                     const numbersDisplay = request.numbers.join(', ');
                     
+                    let statusBadge = '';
+                    if (request.status === 'pending') {
+                        statusBadge = '<span class="status-badge status-pending">В ожидании</span>';
+                    } else if (request.status === 'approved') {
+                        statusBadge = '<span class="status-badge status-approved">Подтверждена</span>';
+                    } else if (request.status === 'rejected') {
+                        statusBadge = '<span class="status-badge status-rejected">Отклонена</span>';
+                    }
+                    
+                    let processedInfo = '';
+                    if (request.processedDate) {
+                        processedInfo = `<div class="request-user" style="font-size: 12px; color: #888;">Обработана: ${request.processedDate} ${request.processedBy ? 'админом' : ''}</div>`;
+                    }
+                    
+                    let actionsHTML = '';
+                    if (request.status === 'pending') {
+                        actionsHTML = `
+                            <div class="request-actions">
+                                <button class="btn btn-success" onclick="approveRequest(${request.id})">
+                                    <i class="fas fa-check"></i>
+                                    Подтвердить
+                                </button>
+                                <button class="btn btn-danger" onclick="rejectRequest(${request.id})">
+                                    <i class="fas fa-times"></i>
+                                    Отклонить
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        actionsHTML = `
+                            <div class="request-actions">
+                                <div style="padding: 10px; text-align: center; color: ${request.status === 'approved' ? '#155724' : '#721c24'}; background: ${request.status === 'approved' ? '#d4edda' : '#f8d7da'}; border-radius: 8px;">
+                                    <i class="fas ${request.status === 'approved' ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                    ${request.status === 'approved' ? 'Заявка подтверждена' : 'Заявка отклонена'}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
                     html += `
-                        <div class="request-item" id="request-${request.id}">
+                        <div class="request-item" id="request-${request.id}" style="${request.status === 'approved' ? 'border-color: #00c851; background: #f0fff4;' : request.status === 'rejected' ? 'border-color: #ff4444; background: #fff0f0;' : ''}">
                             <div class="request-header">
                                 <div>
-                                    <div class="request-id">Заявка #${request.id}</div>
+                                    <div class="request-id">Заявка #${request.id} ${statusBadge}</div>
                                     <div class="request-user">${request.firstName} (@${request.username})</div>
                                     <div class="request-user" style="font-size: 12px; color: #888;">ID пользователя: ${request.userId}</div>
+                                    ${processedInfo}
                                 </div>
                                 <div class="request-date">${request.date}</div>
                             </div>
@@ -1864,16 +1904,7 @@
                                 </div>
                             </div>
                             
-                            <div class="request-actions">
-                                <button class="btn btn-success" onclick="approveRequest(${request.id})">
-                                    <i class="fas fa-check"></i>
-                                    Подтвердить
-                                </button>
-                                <button class="btn btn-danger" onclick="rejectRequest(${request.id})">
-                                    <i class="fas fa-times"></i>
-                                    Отклонить
-                                </button>
-                            </div>
+                            ${actionsHTML}
                         </div>
                     `;
                 });
@@ -1883,18 +1914,58 @@
         }
 
         function loadPaymentRequests() {
-            // ПОКАЗЫВАЕМ ВСЕ ПЛАТЕЖИ ОТ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ
+            // ПОКАЗЫВАЕМ ВСЕ ПЛАТЕЖИ ОТ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ (все статусы)
             const paymentRequests = JSON.parse(localStorage.getItem('sms_mailing_payment_requests') || '[]');
-            const pendingRequests = paymentRequests.filter(p => p.status === 'pending');
             
             let html = '';
             
-            if (pendingRequests.length === 0) {
+            if (paymentRequests.length === 0) {
                 html = '<p style="text-align: center; color: #666; padding: 20px;">Нет запросов на оплату</p>';
             } else {
-                pendingRequests.forEach(payment => {
+                paymentRequests.forEach(payment => {
+                    let statusText = '';
+                    let statusColor = '';
+                    let statusBg = '';
+                    
+                    if (payment.status === 'pending') {
+                        statusText = 'В ожидании';
+                        statusColor = '#856404';
+                        statusBg = '#fff3cd';
+                    } else if (payment.status === 'confirmed') {
+                        statusText = 'Подтвержден';
+                        statusColor = '#155724';
+                        statusBg = '#d4edda';
+                    } else if (payment.status === 'cancelled') {
+                        statusText = 'Отменен';
+                        statusColor = '#721c24';
+                        statusBg = '#f8d7da';
+                    }
+                    
+                    let actionsHTML = '';
+                    if (payment.status === 'pending') {
+                        actionsHTML = `
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="confirmPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #00c851, #5eff8f); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fas fa-check"></i>
+                                    Подтвердить
+                                </button>
+                                <button onclick="cancelPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ff4444, #ff8888); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fas fa-times"></i>
+                                    Отменить
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        actionsHTML = `
+                            <div style="padding: 10px; text-align: center; color: ${statusColor}; background: ${statusBg}; border-radius: 8px;">
+                                <i class="fas ${payment.status === 'confirmed' ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                ${statusText}
+                            </div>
+                        `;
+                    }
+                    
                     html += `
-                        <div class="payment-request" id="payment-${payment.id}" style="margin-bottom: 15px; padding: 15px; border: 2px solid #d1ecff; border-radius: 10px; background: #f8fdff;">
+                        <div class="payment-request" id="payment-${payment.id}" style="margin-bottom: 15px; padding: 15px; border: 2px solid ${payment.status === 'confirmed' ? '#00c851' : payment.status === 'cancelled' ? '#ff4444' : '#d1ecff'}; border-radius: 10px; background: ${payment.status === 'confirmed' ? '#f0fff4' : payment.status === 'cancelled' ? '#fff0f0' : '#f8fdff'};">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                                 <div>
                                     <h4 style="margin: 0 0 5px 0; color: #333;">Пользователь: ${payment.firstName}</h4>
@@ -1908,6 +1979,9 @@
                                     <div style="font-size: 20px; font-weight: 700; color: #0088cc;">
                                         ${payment.amount} ${payment.currency}
                                     </div>
+                                    <div style="font-size: 12px; color: ${statusColor}; background: ${statusBg}; padding: 3px 8px; border-radius: 10px; margin-top: 5px;">
+                                        ${statusText}
+                                    </div>
                                 </div>
                             </div>
                             
@@ -1918,16 +1992,7 @@
                                 </div>
                             </div>
                             
-                            <div style="display: flex; gap: 10px;">
-                                <button onclick="confirmPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #00c851, #5eff8f); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-check"></i>
-                                    Подтвердить
-                                </button>
-                                <button onclick="cancelPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ff4444, #ff8888); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-times"></i>
-                                    Отменить
-                                </button>
-                            </div>
+                            ${actionsHTML}
                         </div>
                     `;
                 });
@@ -1989,25 +2054,8 @@
             
             tg.showAlert(`Рассылка #${requestId} подтверждена! Со счета пользователя ${request.firstName} списано ${amountToDeduct} ${currencyToUse}.`);
             
-            const requestElement = document.getElementById(`request-${requestId}`);
-            if (requestElement) {
-                requestElement.style.borderColor = '#00c851';
-                requestElement.style.background = '#f0fff4';
-                
-                const statusDiv = document.createElement('div');
-                statusDiv.style.marginTop = '10px';
-                statusDiv.style.padding = '8px';
-                statusDiv.style.background = '#00c851';
-                statusDiv.style.color = 'white';
-                statusDiv.style.borderRadius = '5px';
-                statusDiv.style.textAlign = 'center';
-                statusDiv.style.fontSize = '14px';
-                statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Рассылка подтверждена. Списано: ${amountToDeduct} ${currencyToUse}`;
-                
-                requestElement.querySelector('.request-header').appendChild(statusDiv);
-                
-                requestElement.querySelector('.request-actions').style.display = 'none';
-            }
+            // Обновляем список заявок
+            loadAdminRequests();
             
             updateStatistics();
         }
@@ -2038,25 +2086,8 @@
             
             tg.showAlert(`Рассылка #${requestId} отклонена! Пользователь: ${request.firstName}`);
             
-            const requestElement = document.getElementById(`request-${requestId}`);
-            if (requestElement) {
-                requestElement.style.borderColor = '#ff4444';
-                requestElement.style.background = '#fff0f0';
-                
-                const statusDiv = document.createElement('div');
-                statusDiv.style.marginTop = '10px';
-                statusDiv.style.padding = '8px';
-                statusDiv.style.background = '#ff4444';
-                statusDiv.style.color = 'white';
-                statusDiv.style.borderRadius = '5px';
-                statusDiv.style.textAlign = 'center';
-                statusDiv.style.fontSize = '14px';
-                statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Рассылка отклонена';
-                
-                requestElement.querySelector('.request-header').appendChild(statusDiv);
-                
-                requestElement.querySelector('.request-actions').style.display = 'none';
-            }
+            // Обновляем список заявок
+            loadAdminRequests();
             
             updateStatistics();
         }
@@ -2245,25 +2276,8 @@
             
             tg.showAlert(`Платеж #${paymentId} подтвержден! Баланс пользователя ${payment.firstName} пополнен на ${payment.amount} ${payment.currency}.`);
             
-            const paymentElement = document.getElementById(`payment-${paymentId}`);
-            if (paymentElement) {
-                paymentElement.style.borderColor = '#00c851';
-                paymentElement.style.background = '#f0fff4';
-                
-                const statusDiv = document.createElement('div');
-                statusDiv.style.marginTop = '10px';
-                statusDiv.style.padding = '8px';
-                statusDiv.style.background = '#00c851';
-                statusDiv.style.color = 'white';
-                statusDiv.style.borderRadius = '5px';
-                statusDiv.style.textAlign = 'center';
-                statusDiv.style.fontSize = '14px';
-                statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Платеж подтвержден';
-                
-                paymentElement.querySelector('.payment-request > div:first-child').appendChild(statusDiv);
-                
-                paymentElement.querySelector('div:last-child').style.display = 'none';
-            }
+            // Обновляем список платежей
+            loadPaymentRequests();
             
             updateStatistics();
         }
@@ -2280,25 +2294,8 @@
             
             tg.showAlert(`Платеж #${paymentId} отменен!`);
             
-            const paymentElement = document.getElementById(`payment-${paymentId}`);
-            if (paymentElement) {
-                paymentElement.style.borderColor = '#ff4444';
-                paymentElement.style.background = '#fff0f0';
-                
-                const statusDiv = document.createElement('div');
-                statusDiv.style.marginTop = '10px';
-                statusDiv.style.padding = '8px';
-                statusDiv.style.background = '#ff4444';
-                statusDiv.style.color = 'white';
-                statusDiv.style.borderRadius = '5px';
-                statusDiv.style.textAlign = 'center';
-                statusDiv.style.fontSize = '14px';
-                statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Платеж отменен';
-                
-                paymentElement.querySelector('.payment-request > div:first-child').appendChild(statusDiv);
-                
-                paymentElement.querySelector('div:last-child').style.display = 'none';
-            }
+            // Обновляем список платежей
+            loadPaymentRequests();
         }
 
         function saveSettings() {
