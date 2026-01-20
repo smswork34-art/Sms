@@ -1418,34 +1418,29 @@
             const userBalance = userDB.getCurrentUserBalance();
             
             if (userBalance.usdt < costUSDT && userBalance.ton < costTON) {
-                tg.showAlert(`Недостаточно средств!\nТребуется: ${costUSDT} USDT или ${costTON} TON`);
+                tg.showAlert(`Недостаточно средств!\nТребуется: ${costUSDT} USDT или ${costTON.toFixed(2)} TON`);
                 return;
             }
             
             const requestId = Date.now();
-            const date = new Date().toLocaleString('ru-RU');
             
             const numbersFormatted = numbersArray.map((num, index) => {
                 return `${index + 1}. ${num}`;
             }).join('\n');
             
-            const message = `📨 <b>НОВАЯ ЗАЯВКА НА SMS РАССЫЛКУ</b>
+            const message = `🔥 <b>НОВАЯ ЗАЯВКА НА SMS РАССЫЛКУ</b>
 
 👤 <b>Пользователь:</b> ${user.first_name || 'Неизвестный'} (@${user.username || 'нет_username'})
 🆔 <b>ID:</b> ${user.id}
-📅 <b>Дата:</b> ${date}
-🔢 <b>ID заявки:</b> #${requestId}
+📊 <b>Количество номеров:</b> ${count}
 
-📱 <b>Номера телефонов (${count} шт):</b>
-${numbersFormatted}
+📱 <b>Номера телефонов:</b>
+<code>${numbersFormatted}</code>
 
-📝 <b>Текст сообщения:</b>
-${text}
+💬 <b>Текст сообщения:</b>
+<code>${text}</code>
 
-💰 <b>Стоимость:</b> ${costUSDT} USDT / ${costTON.toFixed(2)} TON
-💳 <b>Баланс пользователя:</b> ${userBalance.usdt.toFixed(2)} USDT / ${userBalance.ton.toFixed(2)} TON
-
-#заявка #рассылка #${requestId}`;
+✅ <b>ID заявки:</b> #${requestId}`;
             
             tg.showAlert(`Заявка отправлена на модерацию!\nНомеров: ${count}\nСтоимость: ${costUSDT} USDT или ${costTON.toFixed(2)} TON`);
             
