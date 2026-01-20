@@ -1818,7 +1818,9 @@
         }
 
         function loadAdminRequests() {
-            const pendingRequests = mailingDB.getPendingRequests();
+            // ПОКАЗЫВАЕМ ВСЕ ЗАЯВКИ ОТ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ
+            const allRequests = mailingDB.getAllRequests();
+            const pendingRequests = allRequests.filter(request => request.status === 'pending');
             
             elements.pendingCount.textContent = pendingRequests.length;
             
@@ -1836,6 +1838,7 @@
                                 <div>
                                     <div class="request-id">Заявка #${request.id}</div>
                                     <div class="request-user">${request.firstName} (@${request.username})</div>
+                                    <div class="request-user" style="font-size: 12px; color: #888;">ID пользователя: ${request.userId}</div>
                                 </div>
                                 <div class="request-date">${request.date}</div>
                             </div>
@@ -1879,6 +1882,63 @@
             elements.requestsList.innerHTML = html;
         }
 
+        function loadPaymentRequests() {
+            // ПОКАЗЫВАЕМ ВСЕ ПЛАТЕЖИ ОТ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ
+            const paymentRequests = JSON.parse(localStorage.getItem('sms_mailing_payment_requests') || '[]');
+            const pendingRequests = paymentRequests.filter(p => p.status === 'pending');
+            
+            let html = '';
+            
+            if (pendingRequests.length === 0) {
+                html = '<p style="text-align: center; color: #666; padding: 20px;">Нет запросов на оплату</p>';
+            } else {
+                pendingRequests.forEach(payment => {
+                    html += `
+                        <div class="payment-request" id="payment-${payment.id}" style="margin-bottom: 15px; padding: 15px; border: 2px solid #d1ecff; border-radius: 10px; background: #f8fdff;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                <div>
+                                    <h4 style="margin: 0 0 5px 0; color: #333;">Пользователь: ${payment.firstName}</h4>
+                                    <p style="margin: 0; color: #666; font-size: 14px;">
+                                        ID: ${payment.userId}<br>
+                                        @${payment.username}<br>
+                                        Дата: ${payment.date}
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #0088cc;">
+                                        ${payment.amount} ${payment.currency}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Хеш транзакции:</div>
+                                <div style="background: white; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; word-break: break-all; color: #333;">
+                                    ${payment.hash}
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="confirmPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #00c851, #5eff8f); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fas fa-check"></i>
+                                    Подтвердить
+                                </button>
+                                <button onclick="cancelPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ff4444, #ff8888); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fas fa-times"></i>
+                                    Отменить
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            const listElement = document.getElementById('payment-requests-list');
+            if (listElement) {
+                listElement.innerHTML = html;
+            }
+        }
+
         function approveRequest(requestId) {
             const request = mailingDB.getRequestById(requestId);
             if (!request) {
@@ -1886,7 +1946,9 @@
                 return;
             }
             
-            const userBalance = userDB.getCurrentUserBalance();
+            // Получаем баланс пользователя, который отправил заявку
+            const userBalances = userDB.getAllBalances();
+            const userBalance = userBalances[request.userId] || { usdt: 0, ton: 0 };
             
             let currencyToUse = '';
             let amountToDeduct = 0;
@@ -1900,7 +1962,7 @@
             }
             
             if (!currencyToUse) {
-                tg.showAlert(`Ошибка: у пользователя недостаточно средств для списания.`);
+                tg.showAlert(`Ошибка: у пользователя ${request.firstName} недостаточно средств для списания.`);
                 return;
             }
             
@@ -1925,7 +1987,7 @@
             
             transactionDB.addTransaction(request.userId, transaction);
             
-            tg.showAlert(`Рассылка #${requestId} подтверждена! Со счета пользователя списано ${amountToDeduct} ${currencyToUse}.`);
+            tg.showAlert(`Рассылка #${requestId} подтверждена! Со счета пользователя ${request.firstName} списано ${amountToDeduct} ${currencyToUse}.`);
             
             const requestElement = document.getElementById(`request-${requestId}`);
             if (requestElement) {
@@ -1974,7 +2036,7 @@
             
             transactionDB.addTransaction(request.userId, transaction);
             
-            tg.showAlert(`Рассылка #${requestId} отклонена!`);
+            tg.showAlert(`Рассылка #${requestId} отклонена! Пользователь: ${request.firstName}`);
             
             const requestElement = document.getElementById(`request-${requestId}`);
             if (requestElement) {
@@ -2130,62 +2192,6 @@
             }
             
             elements.adminContent.innerHTML = content;
-        }
-
-        function loadPaymentRequests() {
-            const paymentRequests = JSON.parse(localStorage.getItem('sms_mailing_payment_requests') || '[]');
-            const pendingRequests = paymentRequests.filter(p => p.status === 'pending');
-            
-            let html = '';
-            
-            if (pendingRequests.length === 0) {
-                html = '<p style="text-align: center; color: #666; padding: 20px;">Нет запросов на оплату</p>';
-            } else {
-                pendingRequests.forEach(payment => {
-                    html += `
-                        <div class="payment-request" id="payment-${payment.id}" style="margin-bottom: 15px; padding: 15px; border: 2px solid #d1ecff; border-radius: 10px; background: #f8fdff;">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                                <div>
-                                    <h4 style="margin: 0 0 5px 0; color: #333;">Пользователь: ${payment.firstName}</h4>
-                                    <p style="margin: 0; color: #666; font-size: 14px;">
-                                        ID: ${payment.userId}<br>
-                                        @${payment.username}<br>
-                                        Дата: ${payment.date}
-                                    </p>
-                                </div>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 20px; font-weight: 700; color: #0088cc;">
-                                        ${payment.amount} ${payment.currency}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-bottom: 10px;">
-                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Хеш транзакции:</div>
-                                <div style="background: white; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; word-break: break-all; color: #333;">
-                                    ${payment.hash}
-                                </div>
-                            </div>
-                            
-                            <div style="display: flex; gap: 10px;">
-                                <button onclick="confirmPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #00c851, #5eff8f); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-check"></i>
-                                    Подтвердить
-                                </button>
-                                <button onclick="cancelPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ff4444, #ff8888); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-times"></i>
-                                    Отменить
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-            
-            const listElement = document.getElementById('payment-requests-list');
-            if (listElement) {
-                listElement.innerHTML = html;
-            }
         }
 
         function loadUsersList() {
