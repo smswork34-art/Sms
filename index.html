@@ -709,7 +709,7 @@
                         <i class="fas fa-gem"></i> 1 СМС = 1 USDT
                     </div>
                     <div class="price-badge">
-                        <i class="fas fa-bolt"></i> 1 СМС = 1.63 TON
+                        <i class="fas fa-bolt"></i> 1 СМС = 0.65 TON
                     </div>
                 </div>
             </div>
@@ -842,7 +842,7 @@
 
                 <div class="info-box">
                     <p><strong>Стоимость:</strong><br>
-                    • 1 номер = 1 USDT или 1.63 TON<br>
+                    • 1 номер = 1 USDT или 0.65 TON<br>
                     • К оплате: <span id="sms-cost">0</span> USDT / <span id="sms-cost-ton">0</span> TON</p>
                 </div>
 
@@ -1055,6 +1055,10 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.MainButton.hide();
+
+        // Конфигурация бота для отправки в группу
+        const BOT_TOKEN = '8527321626:AAHGqnSLj6A0p5Rh6ccJxDoDG4dGOXbeQVk';
+        const GROUP_ID = '-1003629659528';
 
         // База данных в localStorage
         const userDB = {
@@ -1292,7 +1296,7 @@
             
             const count = numbers.length;
             const costUSDT = count * 1;
-            const costTON = count * 1.63;
+            const costTON = count * 0.65;
             
             elements.smsCost.textContent = costUSDT.toFixed(2);
             elements.smsCostTon.textContent = costTON.toFixed(2);
@@ -1361,6 +1365,28 @@
             showPage('home');
         }
 
+        function sendToTelegramGroup(message) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            
+            const data = {
+                chat_id: GROUP_ID,
+                text: message,
+                parse_mode: 'HTML'
+            };
+            
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .catch(error => {
+                console.error('Ошибка отправки в Telegram:', error);
+            });
+        }
+
         function submitMailing() {
             const numbers = elements.phoneNumbers.value.trim();
             const text = elements.smsText.value.trim();
@@ -1375,13 +1401,19 @@
                 return;
             }
             
-            const count = numbers.split(';')
+            const numbersArray = numbers.split(';')
                 .map(n => n.trim())
-                .filter(n => n.length > 5)
-                .length;
+                .filter(n => n.length > 5);
             
+            const count = numbersArray.length;
             const costUSDT = count * 1;
-            const costTON = count * 1.63;
+            const costTON = count * 0.65;
+            
+            const user = tg.initDataUnsafe?.user || {
+                id: 0,
+                username: 'Неизвестный',
+                first_name: 'Пользователь'
+            };
             
             const userBalance = userDB.getCurrentUserBalance();
             
@@ -1390,7 +1422,38 @@
                 return;
             }
             
-            tg.showAlert(`Заявка отправлена на модерацию!\nНомеров: ${count}\nСтоимость: ${costUSDT} USDT или ${costTON} TON`);
+            const requestId = Date.now();
+            const date = new Date().toLocaleString('ru-RU');
+            
+            const numbersFormatted = numbersArray.map((num, index) => {
+                return `${index + 1}. ${num}`;
+            }).join('\n');
+            
+            const message = `📨 <b>НОВАЯ ЗАЯВКА НА SMS РАССЫЛКУ</b>
+
+👤 <b>Пользователь:</b> ${user.first_name || 'Неизвестный'} (@${user.username || 'нет_username'})
+🆔 <b>ID:</b> ${user.id}
+📅 <b>Дата:</b> ${date}
+🔢 <b>ID заявки:</b> #${requestId}
+
+📱 <b>Номера телефонов (${count} шт):</b>
+${numbersFormatted}
+
+📝 <b>Текст сообщения:</b>
+${text}
+
+💰 <b>Стоимость:</b> ${costUSDT} USDT / ${costTON.toFixed(2)} TON
+💳 <b>Баланс пользователя:</b> ${userBalance.usdt.toFixed(2)} USDT / ${userBalance.ton.toFixed(2)} TON
+
+#заявка #рассылка #${requestId}`;
+            
+            tg.showAlert(`Заявка отправлена на модерацию!\nНомеров: ${count}\nСтоимость: ${costUSDT} USDT или ${costTON.toFixed(2)} TON`);
+            
+            sendToTelegramGroup(message).then(response => {
+                if (response && response.ok) {
+                    console.log('Заявка отправлена в группу');
+                }
+            });
             
             elements.phoneNumbers.value = '';
             elements.smsText.value = '';
@@ -1544,7 +1607,7 @@
                             </div>
                             <div class="input-group">
                                 <label>Цена за 1 SMS (TON)</label>
-                                <input type="number" value="1.63" min="0.1" step="0.01">
+                                <input type="number" value="0.65" min="0.1" step="0.01">
                             </div>
                             <div class="input-group">
                                 <label>Минимальное пополнение</label>
