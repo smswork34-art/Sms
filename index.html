@@ -1060,134 +1060,79 @@
         const BOT_TOKEN = '8527321626:AAHGqnSLj6A0p5Rh6ccJxDoDG4dGOXbeQVk';
         const GROUP_ID = '-1003629659528';
 
-        // ==================== БАЗА ДАННЫХ ====================
-
-        // Конфигурация базы данных
-        const DB_CONFIG = {
-            version: 1,
-            stores: {
-                users: {
-                    key: 'userId',
-                    indexes: ['username', 'firstName', 'balance', 'registrationDate']
-                },
-                payments: {
-                    key: 'id',
-                    indexes: ['userId', 'status', 'currency', 'amount', 'date', 'hash']
-                },
-                mailings: {
-                    key: 'id',
-                    indexes: ['userId', 'status', 'smsCount', 'date', 'cost']
-                },
-                transactions: {
-                    key: 'id',
-                    indexes: ['userId', 'type', 'currency', 'amount', 'date']
-                },
-                admin: {
-                    key: 'key',
-                    indexes: ['value']
-                }
-            }
-        };
-
-        // Инициализация базы данных
-        class Database {
+        // ==================== ПРОСТАЯ БАЗА ДАННЫХ ====================
+        class SimpleDB {
             constructor() {
-                this.dbName = 'sms_mailing_db';
+                this.keys = {
+                    users: 'sms_users',
+                    payments: 'sms_payments',
+                    mailings: 'sms_mailings',
+                    transactions: 'sms_transactions',
+                    settings: 'sms_settings'
+                };
                 this.init();
             }
 
             init() {
-                // Создаем структуру в localStorage если её нет
-                if (!localStorage.getItem(this.dbName)) {
-                    this.resetDatabase();
+                // Инициализируем если нет данных
+                if (!localStorage.getItem(this.keys.users)) {
+                    this.resetAll();
                 }
             }
 
-            resetDatabase() {
-                const db = {
-                    version: DB_CONFIG.version,
-                    users: {},
-                    payments: {},
-                    mailings: {},
-                    transactions: {},
-                    admin: {},
-                    settings: {
-                        usdtPrice: 1,
-                        tonPrice: 0.65,
-                        minDeposit: 10,
-                        adminKey: '1235',
-                        usdtWallet: 'TJSgjT9n1234567890abcdefghijklmnop',
-                        tonWallet: 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'
-                    }
+            resetAll() {
+                // Настройки по умолчанию
+                const settings = {
+                    usdtPrice: 1,
+                    tonPrice: 0.65,
+                    minDeposit: 10,
+                    adminKey: '1235',
+                    usdtWallet: 'TJSgjT9n1234567890abcdefghijklmnop',
+                    tonWallet: 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'
                 };
-
-                // Создаем тестового админа
-                db.users[1] = {
-                    userId: 1,
-                    username: 'admin',
-                    firstName: 'Администратор',
-                    balance: { usdt: 1000, ton: 1000 },
-                    registrationDate: new Date().toISOString(),
-                    isAdmin: true
-                };
-
-                // Добавляем тестовые платежи
-                const testPayment1 = {
-                    id: Date.now(),
-                    userId: 123456,
-                    username: 'test_user',
-                    firstName: 'Тестовый Пользователь',
-                    hash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-                    amount: 50,
-                    currency: 'USDT',
-                    date: new Date().toISOString(),
-                    status: 'pending',
-                    type: 'deposit',
-                    adminNote: ''
-                };
-
-                const testPayment2 = {
-                    id: Date.now() + 1,
-                    userId: 654321,
-                    username: 'another_user',
-                    firstName: 'Другой Пользователь',
-                    hash: '0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
-                    amount: 25,
-                    currency: 'TON',
-                    date: new Date().toISOString(),
-                    status: 'pending',
-                    type: 'deposit',
-                    adminNote: ''
-                };
-
-                db.payments[testPayment1.id] = testPayment1;
-                db.payments[testPayment2.id] = testPayment2;
-
-                localStorage.setItem(this.dbName, JSON.stringify(db));
-                console.log('База данных инициализирована с тестовыми данными');
+                localStorage.setItem(this.keys.settings, JSON.stringify(settings));
+                
+                // Пустые массивы для данных
+                localStorage.setItem(this.keys.users, JSON.stringify([]));
+                localStorage.setItem(this.keys.payments, JSON.stringify([]));
+                localStorage.setItem(this.keys.mailings, JSON.stringify([]));
+                localStorage.setItem(this.keys.transactions, JSON.stringify([]));
+                
+                console.log('База данных инициализирована');
             }
 
-            getDB() {
-                const dbJson = localStorage.getItem(this.dbName);
-                return dbJson ? JSON.parse(dbJson) : this.resetDatabase();
+            // === НАСТРОЙКИ ===
+            getSettings() {
+                const data = localStorage.getItem(this.keys.settings);
+                return data ? JSON.parse(data) : {};
             }
 
-            saveDB(db) {
-                localStorage.setItem(this.dbName, JSON.stringify(db));
+            updateSettings(newSettings) {
+                const current = this.getSettings();
+                const updated = { ...current, ...newSettings };
+                localStorage.setItem(this.keys.settings, JSON.stringify(updated));
+                return updated;
             }
 
-            // === ОПЕРАЦИИ С ПОЛЬЗОВАТЕЛЯМИ ===
+            // === ПОЛЬЗОВАТЕЛИ ===
+            getUsers() {
+                const data = localStorage.getItem(this.keys.users);
+                return data ? JSON.parse(data) : [];
+            }
+
             getUser(userId) {
-                const db = this.getDB();
-                return db.users[userId] || null;
+                const users = this.getUsers();
+                return users.find(u => u.userId === userId) || null;
             }
 
             getOrCreateUser(tgUser) {
-                const db = this.getDB();
+                const users = this.getUsers();
                 const userId = tgUser.id;
-
-                if (!db.users[userId]) {
-                    db.users[userId] = {
+                
+                let user = users.find(u => u.userId === userId);
+                
+                if (!user) {
+                    user = {
                         userId: userId,
                         username: tgUser.username || `user_${userId}`,
                         firstName: tgUser.first_name || 'Пользователь',
@@ -1200,51 +1145,62 @@
                         smsSent: 0,
                         isAdmin: false
                     };
-                    this.saveDB(db);
+                    users.push(user);
+                    localStorage.setItem(this.keys.users, JSON.stringify(users));
                 } else {
-                    // Обновляем последнюю активность
-                    db.users[userId].lastActivity = new Date().toISOString();
-                    this.saveDB(db);
+                    // Обновляем активность
+                    user.lastActivity = new Date().toISOString();
+                    const index = users.findIndex(u => u.userId === userId);
+                    users[index] = user;
+                    localStorage.setItem(this.keys.users, JSON.stringify(users));
                 }
-
-                return db.users[userId];
-            }
-
-            getAllUsers() {
-                const db = this.getDB();
-                return Object.values(db.users);
+                
+                return user;
             }
 
             updateUserBalance(userId, currency, amount) {
-                const db = this.getDB();
-                if (db.users[userId]) {
-                    if (!db.users[userId].balance) {
-                        db.users[userId].balance = { usdt: 0, ton: 0 };
-                    }
-
-                    const oldBalance = db.users[userId].balance[currency.toLowerCase()] || 0;
-                    db.users[userId].balance[currency.toLowerCase()] = oldBalance + amount;
-
-                    // Обновляем статистику
-                    if (amount > 0) {
-                        if (!db.users[userId].totalDeposited) {
-                            db.users[userId].totalDeposited = { usdt: 0, ton: 0 };
+                const users = this.getUsers();
+                const userIndex = users.findIndex(u => u.userId === userId);
+                
+                if (userIndex !== -1) {
+                    const user = users[userIndex];
+                    
+                    // Обновляем баланс
+                    if (currency === 'USDT') {
+                        user.balance.usdt = (user.balance.usdt || 0) + amount;
+                        if (amount > 0) {
+                            user.totalDeposited.usdt = (user.totalDeposited.usdt || 0) + amount;
                         }
-                        db.users[userId].totalDeposited[currency.toLowerCase()] = 
-                            (db.users[userId].totalDeposited[currency.toLowerCase()] || 0) + amount;
+                    } else if (currency === 'TON') {
+                        user.balance.ton = (user.balance.ton || 0) + amount;
+                        if (amount > 0) {
+                            user.totalDeposited.ton = (user.totalDeposited.ton || 0) + amount;
+                        }
                     }
-
-                    this.saveDB(db);
-                    return db.users[userId].balance;
+                    
+                    users[userIndex] = user;
+                    localStorage.setItem(this.keys.users, JSON.stringify(users));
+                    
+                    return user.balance;
                 }
                 return null;
             }
 
-            // === ОПЕРАЦИИ С ПЛАТЕЖАМИ ===
-            createPayment(paymentData) {
-                const db = this.getDB();
-                const paymentId = Date.now();
+            // === ПЛАТЕЖИ ===
+            getPayments() {
+                const data = localStorage.getItem(this.keys.payments);
+                return data ? JSON.parse(data) : [];
+            }
 
+            getPayment(paymentId) {
+                const payments = this.getPayments();
+                return payments.find(p => p.id === paymentId) || null;
+            }
+
+            createPayment(paymentData) {
+                const payments = this.getPayments();
+                const paymentId = Date.now();
+                
                 const payment = {
                     id: paymentId,
                     userId: paymentData.userId,
@@ -1254,42 +1210,31 @@
                     amount: paymentData.amount,
                     currency: paymentData.currency,
                     date: new Date().toISOString(),
-                    status: 'pending', // pending, confirmed, cancelled
+                    status: 'pending',
                     type: 'deposit',
                     adminNote: ''
                 };
-
-                db.payments[paymentId] = payment;
-                this.saveDB(db);
-
+                
+                payments.push(payment);
+                localStorage.setItem(this.keys.payments, JSON.stringify(payments));
+                
                 return payment;
             }
 
-            getPayment(paymentId) {
-                const db = this.getDB();
-                return db.payments[paymentId] || null;
-            }
-
-            getAllPayments() {
-                const db = this.getDB();
-                return Object.values(db.payments);
-            }
-
-            getPendingPayments() {
-                const payments = this.getAllPayments();
-                return payments.filter(p => p.status === 'pending');
-            }
-
             updatePaymentStatus(paymentId, status, adminNote = '') {
-                const db = this.getDB();
-                if (db.payments[paymentId]) {
-                    db.payments[paymentId].status = status;
-                    db.payments[paymentId].processedAt = new Date().toISOString();
-                    db.payments[paymentId].adminNote = adminNote;
-
-                    // Если платеж подтвержден, обновляем баланс пользователя
+                const payments = this.getPayments();
+                const paymentIndex = payments.findIndex(p => p.id === paymentId);
+                
+                if (paymentIndex !== -1) {
+                    payments[paymentIndex].status = status;
+                    payments[paymentIndex].processedAt = new Date().toISOString();
+                    payments[paymentIndex].adminNote = adminNote;
+                    
+                    localStorage.setItem(this.keys.payments, JSON.stringify(payments));
+                    
+                    // Если платеж подтвержден, обновляем баланс
                     if (status === 'confirmed') {
-                        const payment = db.payments[paymentId];
+                        const payment = payments[paymentIndex];
                         this.updateUserBalance(payment.userId, payment.currency, payment.amount);
                         
                         // Создаем транзакцию
@@ -1302,22 +1247,31 @@
                             paymentId: paymentId
                         });
                     }
-
-                    this.saveDB(db);
+                    
                     return true;
                 }
                 return false;
             }
 
-            // === ОПЕРАЦИИ С ТРАНЗАКЦИЯМИ ===
-            createTransaction(transactionData) {
-                const db = this.getDB();
-                const transactionId = Date.now();
+            getPendingPayments() {
+                const payments = this.getPayments();
+                return payments.filter(p => p.status === 'pending');
+            }
 
+            // === ТРАНЗАКЦИИ ===
+            getTransactions() {
+                const data = localStorage.getItem(this.keys.transactions);
+                return data ? JSON.parse(data) : [];
+            }
+
+            createTransaction(transactionData) {
+                const transactions = this.getTransactions();
+                const transactionId = Date.now();
+                
                 const transaction = {
                     id: transactionId,
                     userId: transactionData.userId,
-                    type: transactionData.type, // deposit, payment, refund
+                    type: transactionData.type,
                     currency: transactionData.currency,
                     amount: transactionData.amount,
                     description: transactionData.description,
@@ -1325,25 +1279,28 @@
                     paymentId: transactionData.paymentId || null,
                     mailingId: transactionData.mailingId || null
                 };
-
-                if (!db.transactions) db.transactions = {};
-                db.transactions[transactionId] = transaction;
-                this.saveDB(db);
-
+                
+                transactions.push(transaction);
+                localStorage.setItem(this.keys.transactions, JSON.stringify(transactions));
+                
                 return transaction;
             }
 
             getUserTransactions(userId) {
-                const db = this.getDB();
-                const transactions = db.transactions ? Object.values(db.transactions) : [];
+                const transactions = this.getTransactions();
                 return transactions.filter(t => t.userId === userId);
             }
 
-            // === ОПЕРАЦИИ С РАССЫЛКАМИ ===
-            createMailing(mailingData) {
-                const db = this.getDB();
-                const mailingId = Date.now();
+            // === РАССЫЛКИ ===
+            getMailings() {
+                const data = localStorage.getItem(this.keys.mailings);
+                return data ? JSON.parse(data) : [];
+            }
 
+            createMailing(mailingData) {
+                const mailings = this.getMailings();
+                const mailingId = Date.now();
+                
                 const mailing = {
                     id: mailingId,
                     userId: mailingData.userId,
@@ -1353,104 +1310,64 @@
                     cost: mailingData.cost,
                     currency: mailingData.currency,
                     date: new Date().toISOString(),
-                    status: 'pending', // pending, approved, rejected, processing, completed
+                    status: 'pending',
                     adminNote: ''
                 };
-
-                if (!db.mailings) db.mailings = {};
-                db.mailings[mailingId] = mailing;
-                this.saveDB(db);
-
+                
+                mailings.push(mailing);
+                localStorage.setItem(this.keys.mailings, JSON.stringify(mailings));
+                
                 return mailing;
             }
 
-            getAllMailings() {
-                const db = this.getDB();
-                return db.mailings ? Object.values(db.mailings) : [];
-            }
-
             updateMailingStatus(mailingId, status, adminNote = '') {
-                const db = this.getDB();
-                if (db.mailings && db.mailings[mailingId]) {
-                    db.mailings[mailingId].status = status;
-                    db.mailings[mailingId].processedAt = new Date().toISOString();
-                    db.mailings[mailingId].adminNote = adminNote;
-                    this.saveDB(db);
+                const mailings = this.getMailings();
+                const mailingIndex = mailings.findIndex(m => m.id === mailingId);
+                
+                if (mailingIndex !== -1) {
+                    mailings[mailingIndex].status = status;
+                    mailings[mailingIndex].processedAt = new Date().toISOString();
+                    mailings[mailingIndex].adminNote = adminNote;
+                    
+                    localStorage.setItem(this.keys.mailings, JSON.stringify(mailings));
                     return true;
                 }
                 return false;
             }
 
-            // === АДМИН ОПЕРАЦИИ ===
-            getSettings() {
-                const db = this.getDB();
-                return db.settings || {};
-            }
-
-            updateSettings(newSettings) {
-                const db = this.getDB();
-                db.settings = { ...db.settings, ...newSettings };
-                this.saveDB(db);
-                return db.settings;
-            }
-
+            // === АДМИН СТАТИСТИКА ===
             getAdminStats() {
-                const db = this.getDB();
-                const users = this.getAllUsers();
-                const payments = this.getAllPayments();
-                const mailings = this.getAllMailings();
-
+                const users = this.getUsers();
+                const payments = this.getPayments();
+                const mailings = this.getMailings();
+                
                 const totalDeposits = payments
                     .filter(p => p.status === 'confirmed')
                     .reduce((sum, p) => sum + p.amount, 0);
-
+                
                 const totalSMS = mailings
                     .filter(m => m.status === 'completed')
                     .reduce((sum, m) => sum + m.smsCount, 0);
-
+                
                 return {
                     totalUsers: users.length,
                     totalMailings: mailings.length,
                     pendingPayments: payments.filter(p => p.status === 'pending').length,
                     pendingMailings: mailings.filter(m => m.status === 'pending').length,
                     totalDeposits: totalDeposits,
-                    totalSMS: totalSMS,
-                    activeUsers: users.filter(u => {
-                        const lastActivity = new Date(u.lastActivity);
-                        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                        return lastActivity > weekAgo;
-                    }).length
+                    totalSMS: totalSMS
                 };
-            }
-
-            // === ЭКСПОРТ/ИМПОРТ ДАННЫХ ===
-            exportData() {
-                return this.getDB();
-            }
-
-            importData(data) {
-                localStorage.setItem(this.dbName, JSON.stringify(data));
-                return true;
-            }
-
-            // === ОЧИСТКА ДАННЫХ ===
-            clearAllData() {
-                localStorage.removeItem(this.dbName);
-                this.resetDatabase();
-                return true;
             }
         }
 
-        // Создаем глобальный экземпляр базы данных
-        const db = new Database();
+        // Создаем экземпляр базы данных
+        const db = new SimpleDB();
 
         // Состояние приложения
         let appState = {
             selectedCurrency: 'USDT',
             selectedAmount: 10,
-            transactions: [],
-            isAdmin: false,
-            paymentRequests: []
+            isAdmin: false
         };
 
         // DOM элементы
@@ -1476,46 +1393,30 @@
             adminContent: document.getElementById('admin-content')
         };
 
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            loadUserData();
-            setupEventListeners();
-        });
-
-        function setupEventListeners() {
-            elements.smsText.addEventListener('input', function() {
-                elements.charCount.textContent = this.value.length;
-                updateSMSCost();
-            });
-
-            elements.phoneNumbers.addEventListener('input', updateSMSCost);
-
-            elements.customAmountInput.addEventListener('input', function() {
-                const amount = parseFloat(this.value) || 0;
-                if (amount >= 10) {
-                    appState.selectedAmount = amount;
-                }
-            });
-        }
+        // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
 
         function showPage(pageId) {
+            // Скрыть все страницы
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
-
+            
+            // Показать выбранную страницу
             document.getElementById(pageId).classList.add('active');
-
+            
+            // Обновить навигацию
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-
+            
             const navBtn = document.querySelector(`.nav-btn[onclick*="${pageId}"]`);
             if (navBtn) {
                 navBtn.classList.add('active');
             } else {
                 document.querySelector('.nav-btn[onclick*="home"]').classList.add('active');
             }
-
+            
+            // Загрузить данные для страницы
             switch(pageId) {
                 case 'history':
                     loadTransactions();
@@ -1543,17 +1444,19 @@
             
             const user = db.getOrCreateUser(tgUser);
             
+            // Обновить баланс на странице
             elements.balanceUsdt.textContent = user.balance.usdt.toFixed(2);
             elements.balanceTon.textContent = user.balance.ton.toFixed(2);
             
-            updateStatistics(user);
+            // Обновить статистику
+            updateUserStatistics(user);
         }
 
-        function updateStatistics(user) {
+        function updateUserStatistics(user) {
             if (!user) return;
             
             const transactions = db.getUserTransactions(user.userId);
-            const mailings = db.getAllMailings().filter(m => m.userId === user.userId);
+            const mailings = db.getMailings().filter(m => m.userId === user.userId);
             
             const totalSMS = mailings.reduce((sum, m) => sum + m.smsCount, 0);
             const totalCost = mailings.reduce((sum, m) => sum + m.cost, 0);
@@ -1570,6 +1473,7 @@
         function selectCurrency(currency) {
             appState.selectedCurrency = currency;
             
+            // Обновить UI
             document.querySelectorAll('.deposit-option').forEach(option => {
                 option.classList.remove('active');
             });
@@ -1656,7 +1560,7 @@
             tg.showAlert('Пожалуйста, введите HASH транзакции после оплаты');
         }
 
-        // ==================== ФУНКЦИИ ДЛЯ ПЛАТЕЖЕЙ ====================
+        // ==================== ОПЛАТА ====================
 
         function submitPayment() {
             const hash = elements.txHash.value.trim();
@@ -1679,10 +1583,10 @@
                 return;
             }
             
-            // Создаем или получаем пользователя
+            // Получаем или создаем пользователя
             const user = db.getOrCreateUser(tgUser);
             
-            // Создаем запись о платеже в базе данных
+            // Создаем платеж в базе данных
             const payment = db.createPayment({
                 userId: user.userId,
                 username: user.username,
@@ -1692,7 +1596,8 @@
                 currency: currency
             });
             
-            tg.showAlert(`Платеж #${payment.id} отправлен на проверку!\nСумма: ${amount} ${currency}\nХеш: ${hash.substring(0, 20)}...\nАдмин рассмотрит ваш платеж в ближайшее время.`);
+            // Показываем уведомление
+            tg.showAlert(`✅ Платеж #${payment.id} отправлен на проверку!\nСумма: ${amount} ${currency}\nХеш: ${hash.substring(0, 20)}...\nАдмин рассмотрит ваш платеж в ближайшее время.`);
             
             // Отправляем уведомление в Telegram
             sendToTelegramGroup(`💳 НОВЫЙ ПЛАТЕЖ НА ПРОВЕРКУ
@@ -1706,9 +1611,11 @@
 
 📋 Статус: Ожидает проверки`);
             
+            // Очищаем форму
             elements.txHash.value = '';
             elements.hashInputSection.classList.remove('active');
             
+            // Возвращаемся на главную
             showPage('home');
         }
 
@@ -1721,7 +1628,7 @@
                 parse_mode: 'HTML'
             };
             
-            return fetch(url, {
+            fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1729,12 +1636,15 @@
                 body: JSON.stringify(data)
             })
             .then(response => response.json())
+            .then(result => {
+                console.log('Сообщение отправлено в Telegram:', result);
+            })
             .catch(error => {
                 console.error('Ошибка отправки в Telegram:', error);
             });
         }
 
-        // ==================== ФУНКЦИИ ДЛЯ РАССЫЛОК ====================
+        // ==================== РАССЫЛКА ====================
 
         function submitMailing() {
             const numbers = elements.phoneNumbers.value.trim();
@@ -1767,6 +1677,7 @@
             
             const user = db.getOrCreateUser(tgUser);
             
+            // Проверяем баланс
             if (user.balance.usdt < costUSDT && user.balance.ton < costTON) {
                 tg.showAlert(`Недостаточно средств!\nТребуется: ${costUSDT.toFixed(2)} USDT или ${costTON.toFixed(2)} TON`);
                 return;
@@ -1782,6 +1693,7 @@
                 currency: 'USDT'
             });
             
+            // Форматируем номера для отправки
             const numbersFormatted = numbersArray.map((num, index) => {
                 return `${index + 1}. ${num}`;
             }).join('\n');
@@ -1801,22 +1713,20 @@
 
 ✅ <b>ID заявки:</b> #${mailing.id}`;
             
-            tg.showAlert(`Заявка #${mailing.id} отправлена на модерацию!\nНомеров: ${count}\nСтоимость: ${costUSDT.toFixed(2)} USDT или ${costTON.toFixed(2)} TON`);
+            tg.showAlert(`✅ Заявка #${mailing.id} отправлена на модерацию!\nНомеров: ${count}\nСтоимость: ${costUSDT.toFixed(2)} USDT или ${costTON.toFixed(2)} TON`);
             
-            sendToTelegramGroup(message).then(response => {
-                if (response && response.ok) {
-                    console.log('Заявка отправлена в группу');
-                }
-            });
+            sendToTelegramGroup(message);
             
+            // Очищаем форму
             elements.phoneNumbers.value = '';
             elements.smsText.value = '';
             elements.charCount.textContent = '0';
             
+            // Возвращаемся на главную
             showPage('home');
         }
 
-        // ==================== ФУНКЦИИ АДМИН ПАНЕЛИ ====================
+        // ==================== АДМИН ПАНЕЛЬ ====================
 
         function showAdminAccess() {
             elements.adminAccessSection.classList.add('active');
@@ -1828,18 +1738,12 @@
             const settings = db.getSettings();
             
             if (key !== settings.adminKey) {
-                tg.showAlert('Неверный ключ доступа!');
+                tg.showAlert('❌ Неверный ключ доступа!');
                 return;
             }
             
-            const tgUser = tg.initDataUnsafe?.user;
-            if (tgUser) {
-                const user = db.getOrCreateUser(tgUser);
-                // В реальном приложении здесь должна быть проверка прав администратора
-            }
-            
             appState.isAdmin = true;
-            tg.showAlert('Доступ разрешен! Вход в админ панель...');
+            tg.showAlert('✅ Доступ разрешен! Вход в админ панель...');
             
             elements.adminKey.value = '';
             elements.adminAccessSection.classList.remove('active');
@@ -1990,14 +1894,6 @@
                                     <i class="fas fa-save"></i>
                                     Сохранить настройки
                                 </button>
-                                <button class="btn btn-secondary" onclick="exportDatabase()" style="margin-top: 10px;">
-                                    <i class="fas fa-download"></i>
-                                    Экспорт базы данных
-                                </button>
-                                <button class="btn btn-admin" onclick="importDatabase()" style="margin-top: 10px;">
-                                    <i class="fas fa-upload"></i>
-                                    Импорт базы данных
-                                </button>
                                 <button class="btn" onclick="clearDatabase()" style="margin-top: 10px; background: linear-gradient(135deg, #ff4444, #ff8888);">
                                     <i class="fas fa-trash"></i>
                                     Очистить базу данных
@@ -2073,7 +1969,7 @@
         }
 
         function showAllPayments() {
-            const allPayments = db.getAllPayments();
+            const allPayments = db.getPayments();
             let html = '';
             
             if (allPayments.length === 0) {
@@ -2118,31 +2014,31 @@
         function addTestPayments() {
             const testPayment1 = {
                 userId: 999888,
-                username: 'test_user_3',
-                firstName: 'Тест Три',
+                username: 'test_user_1',
+                firstName: 'Тест Один',
                 hash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
-                amount: 75,
+                amount: 100,
                 currency: 'USDT'
             };
 
             const testPayment2 = {
                 userId: 777666,
-                username: 'test_user_4',
-                firstName: 'Тест Четыре',
+                username: 'test_user_2',
+                firstName: 'Тест Два',
                 hash: '0x0987654321abcdef0987654321abcdef0987654321abcdef0987654321abcdef',
-                amount: 150,
+                amount: 50,
                 currency: 'TON'
             };
 
             db.createPayment(testPayment1);
             db.createPayment(testPayment2);
             
-            tg.showAlert('Добавлены тестовые платежи!');
+            tg.showAlert('✅ Добавлены 2 тестовых платежа!');
             refreshPaymentsList();
         }
 
         function refreshMailingsList() {
-            const mailings = db.getAllMailings();
+            const mailings = db.getMailings();
             let html = '';
             
             if (mailings.length === 0) {
@@ -2200,7 +2096,7 @@
         }
 
         function refreshUsersList() {
-            const users = db.getAllUsers();
+            const users = db.getUsers();
             let html = '';
             
             if (users.length === 0) {
@@ -2237,13 +2133,13 @@
         function confirmPayment(paymentId) {
             const payment = db.getPayment(paymentId);
             if (!payment) {
-                tg.showAlert('Платеж не найден!');
+                tg.showAlert('❌ Платеж не найден!');
                 return;
             }
             
             db.updatePaymentStatus(paymentId, 'confirmed', 'Платеж подтвержден администратором');
             
-            tg.showAlert(`Платеж #${paymentId} подтвержден! Баланс пользователя ${payment.firstName} пополнен на ${payment.amount} ${payment.currency}.`);
+            tg.showAlert(`✅ Платеж #${paymentId} подтвержден! Баланс пользователя ${payment.firstName} пополнен на ${payment.amount} ${payment.currency}.`);
             
             // Обновляем список
             refreshPaymentsList();
@@ -2263,7 +2159,7 @@
         function rejectPayment(paymentId) {
             const payment = db.getPayment(paymentId);
             if (!payment) {
-                tg.showAlert('Платеж не найден!');
+                tg.showAlert('❌ Платеж не найден!');
                 return;
             }
             
@@ -2272,7 +2168,7 @@
             
             db.updatePaymentStatus(paymentId, 'cancelled', reason || 'Отклонено администратором');
             
-            tg.showAlert(`Платеж #${paymentId} отклонен! Пользователю отправлено уведомление.`);
+            tg.showAlert(`❌ Платеж #${paymentId} отклонен! Пользователю отправлено уведомление.`);
             
             // Обновляем список
             refreshPaymentsList();
@@ -2290,17 +2186,17 @@
         }
 
         function approveMailing(mailingId) {
-            const mailings = db.getAllMailings();
+            const mailings = db.getMailings();
             const mailing = mailings.find(m => m.id === mailingId);
             if (!mailing) return;
             
             db.updateMailingStatus(mailingId, 'approved', 'Одобрено администратором');
-            tg.showAlert(`Рассылка #${mailingId} одобрена!`);
+            tg.showAlert(`✅ Рассылка #${mailingId} одобрена!`);
             refreshMailingsList();
         }
 
         function completeMailing(mailingId) {
-            const mailings = db.getAllMailings();
+            const mailings = db.getMailings();
             const mailing = mailings.find(m => m.id === mailingId);
             if (!mailing) return;
             
@@ -2322,12 +2218,12 @@
                 });
             }
             
-            tg.showAlert(`Рассылка #${mailingId} отмечена как выполненная! Средства списаны с баланса пользователя.`);
+            tg.showAlert(`✅ Рассылка #${mailingId} отмечена как выполненная! Средства списаны с баланса пользователя.`);
             refreshMailingsList();
         }
 
         function rejectMailing(mailingId) {
-            const mailings = db.getAllMailings();
+            const mailings = db.getMailings();
             const mailing = mailings.find(m => m.id === mailingId);
             if (!mailing) return;
             
@@ -2335,7 +2231,7 @@
             if (reason === null) return;
             
             db.updateMailingStatus(mailingId, 'rejected', reason || 'Отклонено администратором');
-            tg.showAlert(`Рассылка #${mailingId} отклонена!`);
+            tg.showAlert(`❌ Рассылка #${mailingId} отклонена!`);
             refreshMailingsList();
         }
 
@@ -2350,76 +2246,20 @@
             };
             
             db.updateSettings(newSettings);
-            tg.showAlert('Настройки сохранены!');
-        }
-
-        function exportDatabase() {
-            const data = db.exportData();
-            const dataStr = JSON.stringify(data, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `sms_mailing_db_${new Date().toISOString().split('T')[0]}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-            
-            tg.showAlert('База данных экспортирована в JSON файл!');
-        }
-
-        function importDatabase() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            
-            input.onchange = function(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        db.importData(data);
-                        tg.showAlert('База данных успешно импортирована!');
-                        location.reload();
-                    } catch (error) {
-                        tg.showAlert('Ошибка импорта: неверный формат файла!');
-                    }
-                };
-                reader.readAsText(file);
-            };
-            
-            input.click();
-        }
-
-        function clearDatabase() {
-            if (confirm('ВНИМАНИЕ! Вы уверены, что хотите полностью очистить базу данных? Все данные будут удалены без возможности восстановления.')) {
-                db.clearAllData();
-                tg.showAlert('База данных очищена! Приложение будет перезагружено.');
-                setTimeout(() => location.reload(), 1000);
-            }
+            tg.showAlert('✅ Настройки сохранены!');
         }
 
         function exportUserData() {
-            const users = db.getAllUsers();
-            const csvContent = "data:text/csv;charset=utf-8," 
-                + "ID,Username,First Name,Registration Date,Last Activity,USDT Balance,TON Balance,Total Deposited USDT,Total Deposited TON,Total SMS Sent\n"
-                + users.map(user => {
-                    return [
-                        user.userId,
-                        user.username,
-                        user.firstName,
-                        user.registrationDate,
-                        user.lastActivity,
-                        user.balance.usdt,
-                        user.balance.ton,
-                        user.totalDeposited ? user.totalDeposited.usdt : 0,
-                        user.totalDeposited ? user.totalDeposited.ton : 0,
-                        user.smsSent || 0
-                    ].join(',');
-                }).join('\n');
+            const users = db.getUsers();
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Заголовки
+            csvContent += "ID,Username,First Name,Registration Date,Last Activity,USDT Balance,TON Balance\n";
+            
+            // Данные
+            users.forEach(user => {
+                csvContent += `${user.userId},${user.username},${user.firstName},${user.registrationDate},${user.lastActivity},${user.balance.usdt},${user.balance.ton}\n`;
+            });
             
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
@@ -2429,7 +2269,15 @@
             link.click();
             document.body.removeChild(link);
             
-            tg.showAlert('Данные пользователей экспортированы в CSV файл!');
+            tg.showAlert('✅ Данные пользователей экспортированы в CSV файл!');
+        }
+
+        function clearDatabase() {
+            if (confirm('⚠️ ВНИМАНИЕ! Вы уверены, что хотите полностью очистить базу данных? Все данные будут удалены без возможности восстановления.')) {
+                db.resetAll();
+                tg.showAlert('✅ База данных очищена! Приложение будет перезагружено.');
+                setTimeout(() => location.reload(), 1000);
+            }
         }
 
         function loadTransactions() {
@@ -2479,9 +2327,63 @@
             elements.transactionsList.innerHTML = html;
         }
 
-        // Инициализация при загрузке
-        loadUserData();
-        updateSMSCost();
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Настройка обработчиков событий
+            elements.smsText.addEventListener('input', function() {
+                elements.charCount.textContent = this.value.length;
+                updateSMSCost();
+            });
+
+            elements.phoneNumbers.addEventListener('input', updateSMSCost);
+
+            elements.customAmountInput.addEventListener('input', function() {
+                const amount = parseFloat(this.value) || 0;
+                if (amount >= 10) {
+                    appState.selectedAmount = amount;
+                }
+            });
+            
+            // Загружаем данные пользователя
+            loadUserData();
+            updateSMSCost();
+            
+            // Добавляем тестовые данные при первом запуске
+            setTimeout(() => {
+                const payments = db.getPayments();
+                if (payments.length === 0) {
+                    // Автоматически добавляем тестовые платежи при первом запуске
+                    addTestPayments();
+                }
+            }, 1000);
+        });
+
+        // Глобальные функции для кнопок
+        window.showPage = showPage;
+        window.selectCurrency = selectCurrency;
+        window.selectAmount = selectAmount;
+        window.selectCustomAmount = selectCustomAmount;
+        window.copyAddress = copyAddress;
+        window.showHashInput = showHashInput;
+        window.submitPayment = submitPayment;
+        window.submitMailing = submitMailing;
+        window.showAdminAccess = showAdminAccess;
+        window.enterAdminPanel = enterAdminPanel;
+        window.showAdminSection = showAdminSection;
+        window.refreshPaymentsList = refreshPaymentsList;
+        window.showAllPayments = showAllPayments;
+        window.addTestPayments = addTestPayments;
+        window.refreshMailingsList = refreshMailingsList;
+        window.refreshUsersList = refreshUsersList;
+        window.confirmPayment = confirmPayment;
+        window.rejectPayment = rejectPayment;
+        window.approveMailing = approveMailing;
+        window.completeMailing = completeMailing;
+        window.rejectMailing = rejectMailing;
+        window.saveSettings = saveSettings;
+        window.exportUserData = exportUserData;
+        window.clearDatabase = clearDatabase;
     </script>
 </body>
 </html>
