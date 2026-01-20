@@ -1140,7 +1140,8 @@
             transactions: [],
             isAdmin: false,
             paymentRequests: [],
-            mailingRequests: []
+            mailingRequests: [],
+            messageIds: {} // Для хранения message_id из Telegram
         };
 
         // DOM элементы
@@ -1401,8 +1402,44 @@
                 body: JSON.stringify(data)
             })
             .then(response => response.json())
+            .then(response => {
+                if (response.ok) {
+                    return response.result.message_id;
+                }
+                return null;
+            })
             .catch(error => {
                 console.error('Ошибка отправки в Telegram:', error);
+                return null;
+            });
+        }
+
+        function editTelegramMessage(messageId, newText, removeButtons = true) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
+            
+            const data = {
+                chat_id: GROUP_ID,
+                message_id: messageId,
+                text: newText,
+                parse_mode: 'HTML'
+            };
+            
+            if (removeButtons) {
+                data.reply_markup = {
+                    inline_keyboard: []
+                };
+            }
+            
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .catch(error => {
+                console.error('Ошибка редактирования сообщения в Telegram:', error);
             });
         }
 
@@ -1454,7 +1491,8 @@
                 costUSDT: costUSDT,
                 costTON: costTON,
                 date: new Date().toLocaleString('ru-RU'),
-                status: 'pending'
+                status: 'pending',
+                messageId: null
             };
             
             appState.mailingRequests.push(mailingRequest);
@@ -1488,9 +1526,13 @@ ${text}
                 ]
             ];
             
-            sendToTelegramGroup(message, buttons).then(response => {
-                if (response && response.ok) {
-                    console.log('Заявка отправлена в группу с кнопками');
+            sendToTelegramGroup(message, buttons).then(messageId => {
+                if (messageId) {
+                    mailingRequest.messageId = messageId;
+                    appState.messageIds[requestId] = messageId;
+                    saveMailingRequestsToStorage();
+                    
+                    console.log('Заявка отправлена в группу с кнопками, message_id:', messageId);
                     
                     tg.showAlert(`Заявка отправлена на модерацию!\nНомеров: ${count}\nСтоимость: ${costUSDT} USDT или ${costTON.toFixed(2)} TON`);
                     
@@ -1653,6 +1695,12 @@ ${text}
             const savedRequests = localStorage.getItem('sms_mailing_requests');
             if (savedRequests) {
                 appState.mailingRequests = JSON.parse(savedRequests);
+                
+                appState.mailingRequests.forEach(request => {
+                    if (request.messageId) {
+                        appState.messageIds[request.id] = request.messageId;
+                    }
+                });
             }
         }
 
@@ -1916,6 +1964,33 @@ ${text}
                 saveUserTransaction(transaction);
                 
                 tg.showAlert(`Рассылка #${mailingId} подтверждена! Со счета пользователя списано ${amountToDeduct} ${currencyToUse}.`);
+                
+                if (mailing.messageId || appState.messageIds[mailingId]) {
+                    const messageId = mailing.messageId || appState.messageIds[mailingId];
+                    
+                    const updatedMessage = `🔥 <b>НОВАЯ ЗАЯВКА НА SMS РАССЫЛКУ</b>
+
+👤 <b>Пользователь:</b> ${mailing.firstName} (@${mailing.username})
+🆔 <b>ID:</b> ${mailing.userId}
+📊 <b>Количество номеров:</b> ${mailing.count}
+
+📱 <b>Номера телефонов:</b>
+${mailing.numbers.join(', ')}
+
+💬 <b>Текст сообщения:</b>
+${mailing.text}
+
+💰 <b>Стоимость:</b> ${mailing.costUSDT} USDT / ${mailing.costTON.toFixed(2)} TON
+📅 <b>Дата:</b> ${mailing.date}
+
+✅ <b>ID заявки:</b> #${mailingId}
+
+✅ <b>СМС отправлено</b>`;
+                    
+                    editTelegramMessage(messageId, updatedMessage, true).then(() => {
+                        console.log('Сообщение в Telegram обновлено: СМС отправлено');
+                    });
+                }
             } else {
                 tg.showAlert(`Ошибка: у пользователя недостаточно средств для списания.`);
                 return;
@@ -1966,6 +2041,33 @@ ${text}
             saveUserTransaction(transaction);
             
             saveMailingRequestsToStorage();
+            
+            if (mailing.messageId || appState.messageIds[mailingId]) {
+                const messageId = mailing.messageId || appState.messageIds[mailingId];
+                
+                const updatedMessage = `🔥 <b>НОВАЯ ЗАЯВКА НА SMS РАССЫЛКУ</b>
+
+👤 <b>Пользователь:</b> ${mailing.firstName} (@${mailing.username})
+🆔 <b>ID:</b> ${mailing.userId}
+📊 <b>Количество номеров:</b> ${mailing.count}
+
+📱 <b>Номера телефонов:</b>
+${mailing.numbers.join(', ')}
+
+💬 <b>Текст сообщения:</b>
+${mailing.text}
+
+💰 <b>Стоимость:</b> ${mailing.costUSDT} USDT / ${mailing.costTON.toFixed(2)} TON
+📅 <b>Дата:</b> ${mailing.date}
+
+✅ <b>ID заявки:</b> #${mailingId}
+
+❌ <b>СМС отклонено</b>`;
+                
+                editTelegramMessage(messageId, updatedMessage, true).then(() => {
+                    console.log('Сообщение в Telegram обновлено: СМС отклонено');
+                });
+            }
             
             const mailingElement = document.getElementById(`mailing-${mailingId}`);
             if (mailingElement) {
