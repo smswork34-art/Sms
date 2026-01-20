@@ -128,6 +128,12 @@
             box-shadow: 0 5px 15px rgba(0, 136, 204, 0.3);
         }
 
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         .btn-secondary {
             background: white;
             color: #0088cc;
@@ -851,10 +857,10 @@
                 <p class="subtitle">Отправляйте СМС рассылки быстро и удобно. Идеально для бизнеса и уведомлений.</p>
                 <div class="prices">
                     <div class="price-badge">
-                        <i class="fas fa-gem"></i> 1 СМС = 2 USDT
+                        <i class="fas fa-gem"></i> 1 СМС = 1 USDT
                     </div>
                     <div class="price-badge">
-                        <i class="fas fa-bolt"></i> 1 СМС = 1.30 TON
+                        <i class="fas fa-bolt"></i> 1 СМС = 0.65 TON
                     </div>
                 </div>
             </div>
@@ -866,7 +872,7 @@
                     </div>
                     <div class="amount">
                         <span class="currency-symbol">$</span>
-                        <span id="balance-usdt">10.00</span>
+                        <span id="balance-usdt">0.00</span>
                     </div>
                 </div>
                 <div class="balance-item">
@@ -882,7 +888,7 @@
 
             <div class="section">
                 <h2 class="section-title">Быстрые действия</h2>
-                <button class="btn" onclick="showPage('mailing')">
+                <button class="btn" id="mailing-btn" onclick="showPage('mailing')">
                     <i class="fas fa-paper-plane"></i>
                     Запустить рассылку
                 </button>
@@ -904,7 +910,7 @@
                         <div class="stat-label">Общая стоимость</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value" id="success-rate">100%</div>
+                        <div class="stat-value" id="success-rate">0%</div>
                         <div class="stat-label">Успешных</div>
                     </div>
                     <div class="stat-item">
@@ -987,11 +993,11 @@
 
                 <div class="info-box">
                     <p><strong>Стоимость:</strong><br>
-                    • 1 номер = 2 USDT или 1.30 TON<br>
+                    • 1 номер = 1 USDT или 0.65 TON<br>
                     • К оплате: <span id="sms-cost">0</span> USDT / <span id="sms-cost-ton">0</span> TON</p>
                 </div>
 
-                <button class="btn" onclick="submitMailing()">
+                <button class="btn" id="submit-mailing-btn" onclick="submitMailing()">
                     <i class="fas fa-paper-plane"></i>
                     Отправить на модерацию
                 </button>
@@ -1139,6 +1145,10 @@
                     <i class="fas fa-users"></i>
                     Управление пользователями
                 </button>
+                <button class="admin-btn" onclick="showAdminSection('stats')">
+                    <i class="fas fa-chart-bar"></i>
+                    Статистика системы
+                </button>
                 <button class="admin-btn" onclick="showAdminSection('settings')">
                     <i class="fas fa-cog"></i>
                     Настройки системы
@@ -1217,10 +1227,10 @@
             
             getCurrentUserBalance: function() {
                 const userId = this.getCurrentUserId();
-                if (!userId) return { usdt: 10.00, ton: 0.00 };
+                if (!userId) return { usdt: 0.00, ton: 0.00 };
                 
                 const balances = this.getAllBalances();
-                return balances[userId] || { usdt: 10.00, ton: 0.00 };
+                return balances[userId] || { usdt: 0.00, ton: 0.00 };
             },
             
             getAllBalances: function() {
@@ -1351,6 +1361,55 @@
             }
         };
 
+        // База данных для статистики
+        const statsDB = {
+            getStats: function() {
+                const statsJson = localStorage.getItem('sms_mailing_stats');
+                return statsJson ? JSON.parse(statsJson) : {
+                    totalSMS: 0,
+                    totalCost: 0,
+                    successful: 0,
+                    rejected: 0,
+                    pending: 0,
+                    totalUsers: 0,
+                    totalRevenue: 0
+                };
+            },
+            
+            saveStats: function(stats) {
+                localStorage.setItem('sms_mailing_stats', JSON.stringify(stats));
+            },
+            
+            updateStats: function(updates) {
+                const stats = this.getStats();
+                Object.assign(stats, updates);
+                this.saveStats(stats);
+                return stats;
+            },
+            
+            addSMSStats: function(count, cost, isApproved = true) {
+                const stats = this.getStats();
+                stats.totalSMS += count;
+                stats.totalCost += cost;
+                
+                if (isApproved) {
+                    stats.successful += count;
+                    stats.totalRevenue += cost;
+                } else {
+                    stats.rejected += count;
+                }
+                
+                this.saveStats(stats);
+                return stats;
+            },
+            
+            updatePendingCount: function() {
+                const requests = mailingDB.getAllRequests();
+                const pending = requests.filter(r => r.status === 'pending').length;
+                return this.updateStats({ pending });
+            }
+        };
+
         // Состояние приложения
         let appState = {
             selectedCurrency: 'USDT',
@@ -1380,22 +1439,29 @@
             adminKey: document.getElementById('admin-key'),
             adminContent: document.getElementById('admin-content'),
             requestsList: document.getElementById('requests-list'),
-            pendingCount: document.getElementById('pending-count')
+            pendingCount: document.getElementById('pending-count'),
+            mailingBtn: document.getElementById('mailing-btn'),
+            submitMailingBtn: document.getElementById('submit-mailing-btn')
         };
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
             loadUserData();
             setupEventListeners();
+            updateMailingButton();
         });
 
         function setupEventListeners() {
             elements.smsText.addEventListener('input', function() {
                 elements.charCount.textContent = this.value.length;
                 updateSMSCost();
+                updateSubmitButton();
             });
 
-            elements.phoneNumbers.addEventListener('input', updateSMSCost);
+            elements.phoneNumbers.addEventListener('input', function() {
+                updateSMSCost();
+                updateSubmitButton();
+            });
 
             elements.customAmountInput.addEventListener('input', function() {
                 const amount = parseFloat(this.value) || 0;
@@ -1429,6 +1495,7 @@
                     break;
                 case 'mailing':
                     updateSMSCost();
+                    updateSubmitButton();
                     break;
                 case 'deposit':
                     elements.hashInputSection.classList.remove('active');
@@ -1458,14 +1525,65 @@
             elements.balanceTon.textContent = userBalance.ton.toFixed(2);
             
             updateStatistics();
+            updateMailingButton();
         }
 
         function updateStatistics() {
+            const stats = statsDB.getStats();
             const userBalance = userDB.getCurrentUserBalance();
-            document.getElementById('total-sms').textContent = '42';
-            document.getElementById('total-cost').textContent = '35.2';
-            document.getElementById('success-rate').textContent = '98%';
-            document.getElementById('pending').textContent = '2';
+            
+            document.getElementById('total-sms').textContent = stats.totalSMS;
+            document.getElementById('total-cost').textContent = stats.totalCost.toFixed(2);
+            
+            const successRate = stats.totalSMS > 0 ? Math.round((stats.successful / stats.totalSMS) * 100) : 0;
+            document.getElementById('success-rate').textContent = successRate + '%';
+            
+            document.getElementById('pending').textContent = stats.pending;
+            
+            updateMailingButton();
+        }
+
+        function updateMailingButton() {
+            const userBalance = userDB.getCurrentUserBalance();
+            const hasBalance = userBalance.usdt > 0 || userBalance.ton > 0;
+            
+            if (elements.mailingBtn) {
+                if (!hasBalance) {
+                    elements.mailingBtn.disabled = true;
+                    elements.mailingBtn.innerHTML = '<i class="fas fa-exclamation-circle"></i> Пополните баланс';
+                } else {
+                    elements.mailingBtn.disabled = false;
+                    elements.mailingBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Запустить рассылку';
+                }
+            }
+        }
+
+        function updateSubmitButton() {
+            const userBalance = userDB.getCurrentUserBalance();
+            const numbersText = elements.phoneNumbers.value;
+            const text = elements.smsText.value;
+            
+            const numbers = numbersText.split(';')
+                .map(n => n.trim())
+                .filter(n => n.length > 5);
+            
+            const count = numbers.length;
+            const costUSDT = count * 1;
+            const costTON = count * 0.65;
+            
+            const hasEnoughBalance = userBalance.usdt >= costUSDT || userBalance.ton >= costTON;
+            const hasNumbers = count > 0;
+            const hasText = text.trim().length > 0;
+            
+            if (elements.submitMailingBtn) {
+                if (!hasNumbers || !hasText || !hasEnoughBalance) {
+                    elements.submitMailingBtn.disabled = true;
+                    elements.submitMailingBtn.innerHTML = '<i class="fas fa-exclamation-circle"></i> Проверьте данные';
+                } else {
+                    elements.submitMailingBtn.disabled = false;
+                    elements.submitMailingBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Отправить на модерацию';
+                }
+            }
         }
 
         function selectCurrency(currency) {
@@ -1529,11 +1647,13 @@
                 .filter(n => n.length > 5);
             
             const count = numbers.length;
-            const costUSDT = count * 2;
-            const costTON = count * 1.30;
+            const costUSDT = count * 1;
+            const costTON = count * 0.65;
             
             elements.smsCost.textContent = costUSDT.toFixed(2);
             elements.smsCostTon.textContent = costTON.toFixed(2);
+            
+            updateSubmitButton();
         }
 
         function copyAddress() {
@@ -1618,8 +1738,8 @@
                 .filter(n => n.length > 5);
             
             const count = numbersArray.length;
-            const costUSDT = count * 2;
-            const costTON = count * 1.30;
+            const costUSDT = count * 1;
+            const costTON = count * 0.65;
             
             const user = tg.initDataUnsafe?.user || {
                 id: 0,
@@ -1651,6 +1771,7 @@
             };
             
             mailingDB.addRequest(mailingRequest);
+            statsDB.updatePendingCount();
             
             tg.showAlert(`Заявка отправлена на модерацию!\nНомеров: ${count}\nСтоимость: ${costUSDT} USDT или ${costTON.toFixed(2)} TON`);
             
@@ -1659,6 +1780,7 @@
             elements.charCount.textContent = '0';
             
             showPage('home');
+            updateStatistics();
         }
 
         function showAdminAccess() {
@@ -1684,10 +1806,13 @@
         }
 
         function loadAdminPanel() {
-            document.getElementById('admin-total-users').textContent = '15';
-            document.getElementById('admin-total-mailings').textContent = '42';
-            document.getElementById('admin-pending').textContent = '5';
-            document.getElementById('admin-total-balance').textContent = '120.5';
+            const stats = statsDB.getStats();
+            const users = userDB.getAllUsers();
+            
+            document.getElementById('admin-total-users').textContent = users.length;
+            document.getElementById('admin-total-mailings').textContent = stats.totalSMS;
+            document.getElementById('admin-pending').textContent = stats.pending;
+            document.getElementById('admin-total-balance').textContent = stats.totalRevenue.toFixed(2);
             
             showAdminSection('payments');
         }
@@ -1782,6 +1907,8 @@
             userDB.updateUserBalance(request.userId, currencyToUse, amountToDeduct, false);
             
             mailingDB.updateRequestStatus(requestId, 'approved', appState.isAdmin ? 'admin' : null);
+            statsDB.addSMSStats(request.count, amountToDeduct, true);
+            statsDB.updatePendingCount();
             
             const transaction = {
                 id: Date.now(),
@@ -1819,6 +1946,8 @@
                 
                 requestElement.querySelector('.request-actions').style.display = 'none';
             }
+            
+            updateStatistics();
         }
 
         function rejectRequest(requestId) {
@@ -1829,6 +1958,8 @@
             }
             
             mailingDB.updateRequestStatus(requestId, 'rejected', appState.isAdmin ? 'admin' : null);
+            statsDB.addSMSStats(request.count, 0, false);
+            statsDB.updatePendingCount();
             
             const transaction = {
                 id: Date.now(),
@@ -1864,6 +1995,8 @@
                 
                 requestElement.querySelector('.request-actions').style.display = 'none';
             }
+            
+            updateStatistics();
         }
 
         function showAdminSection(section) {
@@ -1910,6 +2043,59 @@
                     }, 0);
                     break;
                     
+                case 'stats':
+                    const stats = statsDB.getStats();
+                    const users = userDB.getAllUsers();
+                    const successRate = stats.totalSMS > 0 ? Math.round((stats.successful / stats.totalSMS) * 100) : 0;
+                    
+                    content = `
+                        <div class="card">
+                            <div class="card-title">
+                                <i class="fas fa-chart-bar"></i>
+                                Статистика системы
+                            </div>
+                            <div class="admin-stats-grid">
+                                <div class="admin-stat-item">
+                                    <div class="admin-stat-value">${users.length}</div>
+                                    <div class="admin-stat-label">Всего пользователей</div>
+                                </div>
+                                <div class="admin-stat-item">
+                                    <div class="admin-stat-value">${stats.totalSMS}</div>
+                                    <div class="admin-stat-label">Всего SMS отправлено</div>
+                                </div>
+                                <div class="admin-stat-item">
+                                    <div class="admin-stat-value">${stats.successful}</div>
+                                    <div class="admin-stat-label">Успешных рассылок</div>
+                                </div>
+                                <div class="admin-stat-item">
+                                    <div class="admin-stat-value">${stats.rejected}</div>
+                                    <div class="admin-stat-label">Отклоненных</div>
+                                </div>
+                                <div class="admin-stat-item">
+                                    <div class="admin-stat-value">${successRate}%</div>
+                                    <div class="admin-stat-label">Процент успеха</div>
+                                </div>
+                                <div class="admin-stat-item">
+                                    <div class="admin-stat-value">$${stats.totalRevenue.toFixed(2)}</div>
+                                    <div class="admin-stat-label">Общая выручка</div>
+                                </div>
+                                <div class="admin-stat-item">
+                                    <div class="admin-stat-value">${stats.pending}</div>
+                                    <div class="admin-stat-label">В ожидании</div>
+                                </div>
+                                <div class="admin-stat-item">
+                                    <div class="admin-stat-value">${stats.totalCost.toFixed(2)}</div>
+                                    <div class="admin-stat-label">Общая стоимость</div>
+                                </div>
+                            </div>
+                            <div class="info-box" style="margin-top: 15px;">
+                                <p><strong>Цены:</strong> 1 SMS = 1 USDT / 0.65 TON</p>
+                                <p><strong>Доходность:</strong> ${(stats.totalRevenue / (stats.totalCost || 1) * 100).toFixed(1)}% от общей стоимости</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
                 case 'settings':
                     content = `
                         <div class="card">
@@ -1919,22 +2105,22 @@
                             </div>
                             <div class="input-group">
                                 <label>Цена за 1 SMS (USDT)</label>
-                                <input type="number" value="2" min="0.1" step="0.1">
+                                <input type="number" value="1" min="0.1" step="0.1" id="price-usdt">
                             </div>
                             <div class="input-group">
                                 <label>Цена за 1 SMS (TON)</label>
-                                <input type="number" value="1.30" min="0.1" step="0.01">
+                                <input type="number" value="0.65" min="0.1" step="0.01" id="price-ton">
                             </div>
                             <div class="input-group">
                                 <label>Минимальное пополнение</label>
-                                <input type="number" value="10" min="1" step="1">
+                                <input type="number" value="10" min="1" step="1" id="min-deposit">
                             </div>
                             <div class="info-box">
                                 <p><strong>Кошельки для пополнения:</strong><br>
                                 USDT: TJSgjT9n1234567890abcdefghijklmnop<br>
                                 TON: EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N</p>
                             </div>
-                            <button class="btn">
+                            <button class="btn" onclick="saveSettings()">
                                 <i class="fas fa-save"></i>
                                 Сохранить настройки
                             </button>
@@ -2046,6 +2232,11 @@
             
             userDB.updateUserBalance(payment.userId, payment.currency, payment.amount, true);
             
+            const stats = statsDB.getStats();
+            statsDB.updateStats({ 
+                totalRevenue: stats.totalRevenue + payment.amount 
+            });
+            
             tg.showAlert(`Платеж #${paymentId} подтвержден! Баланс пользователя ${payment.firstName} пополнен на ${payment.amount} ${payment.currency}.`);
             
             const paymentElement = document.getElementById(`payment-${paymentId}`);
@@ -2067,6 +2258,8 @@
                 
                 paymentElement.querySelector('div:last-child').style.display = 'none';
             }
+            
+            updateStatistics();
         }
 
         function cancelPayment(paymentId) {
@@ -2100,6 +2293,34 @@
                 
                 paymentElement.querySelector('div:last-child').style.display = 'none';
             }
+        }
+
+        function saveSettings() {
+            const priceUsdt = parseFloat(document.getElementById('price-usdt').value) || 1;
+            const priceTon = parseFloat(document.getElementById('price-ton').value) || 0.65;
+            const minDeposit = parseFloat(document.getElementById('min-deposit').value) || 10;
+            
+            const settings = {
+                priceUsdt: priceUsdt,
+                priceTon: priceTon,
+                minDeposit: minDeposit
+            };
+            
+            localStorage.setItem('sms_mailing_settings', JSON.stringify(settings));
+            
+            tg.showAlert('Настройки сохранены!');
+        }
+
+        function loadSettings() {
+            const settingsJson = localStorage.getItem('sms_mailing_settings');
+            if (settingsJson) {
+                return JSON.parse(settingsJson);
+            }
+            return {
+                priceUsdt: 1,
+                priceTon: 0.65,
+                minDeposit: 10
+            };
         }
 
         function loadTransactions() {
@@ -2169,6 +2390,7 @@
 
         loadUserData();
         updateSMSCost();
+        updateSubmitButton();
     </script>
 </body>
 </html>
