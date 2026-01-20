@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Mailing - Мини-приложение</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0088cc 0%, #34b7f1 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 80px;
+        }
+
+        .app-header {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 136, 204, 0.2);
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #0088cc, #34b7f1);
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+
+        h1 {
+            color: #0088cc;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .prices {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .price-badge {
+            background: #f0f9ff;
+            padding: 8px 15px;
+            border-radius: 10px;
+            color: #0088cc;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 136, 204, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            color: #0088cc;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            font-size: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #0088cc, #34b7f1);
+            color: white;
+            border: none;
+            padding: 16px 25px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #0077b3, #2aa8e0);
+            box-shadow: 0 5px 15px rgba(0, 136, 204, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #0088cc;
+            border: 2px solid #0088cc;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f9ff;
+        }
+
+        .balance-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .balance-item {
+            background: linear-gradient(135deg, #f0f9ff, #e1f5fe);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #d1ecff;
+        }
+
+        .currency {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0088cc;
+        }
+
+        .currency-symbol {
+            font-size: 20px;
+            margin-right: 2px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0088cc;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .nav-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-around;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: #666;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 100px;
+        }
+
+        .nav-btn:hover {
+            background: #f0f9ff;
+            color: #0088cc;
+        }
+
+        .nav-btn.active {
+            color: #0088cc;
+            background: #f0f9ff;
+        }
+
+        .nav-btn i {
+            font-size: 22px;
+        }
+
+        .nav-btn span {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-type {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .history-icon.deposit {
+            background: linear-gradient(135deg, #00c851, #5eff8f);
+        }
+
+        .history-icon.payment {
+            background: linear-gradient(135deg, #ff4444, #ff8888);
+        }
+
+        .history-details h4 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .history-details p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .history-amount {
+            text-align: right;
+        }
+
+        .history-amount .amount {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .history-amount .currency {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .deposit-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .deposit-option {
+            background: linear-gradient(135deg, #f8fdff, #e6f7ff);
+            border: 2px solid #d1ecff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .deposit-option:hover {
+            background: linear-gradient(135deg, #e6f7ff, #d4f1ff);
+            border-color: #0088cc;
+            transform: translateY(-3px);
+        }
+
+        .deposit-option.active {
+            background: linear-gradient(135deg, #0088cc, #34b7f1);
+            border-color: #0088cc;
+            color: white;
+        }
+
+        .deposit-option.active .currency {
+            color: white;
+        }
+
+        .deposit-option i {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #0088cc;
+        }
+
+        .deposit-option.active i {
+            color: white;
+        }
+
+        .deposit-option .currency {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0088cc;
+            margin-bottom: 5px;
+        }
+
+        .deposit-option.active .currency {
+            color: white;
+        }
+
+        .deposit-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .amount-btn {
+            background: white;
+            border: 2px solid #d1ecff;
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #0088cc;
+        }
+
+        .amount-btn:hover {
+            background: #f0f9ff;
+            border-color: #0088cc;
+        }
+
+        .amount-btn.active {
+            background: #0088cc;
+            color: white;
+            border-color: #0088cc;
+        }
+
+        .custom-amount {
+            margin-top: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #0088cc;
+            font-weight: 500;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #d1ecff;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #0088cc;
+            box-shadow: 0 0 0 3px rgba(0, 136, 204, 0.1);
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #0088cc;
+        }
+
+        .info-box p {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .address-box {
+            background: #f8fdff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px dashed #0088cc;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #0088cc;
+        }
+
+        .loading i {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .app-header {
+                padding: 20px;
+            }
+            
+            .balance-card {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .deposit-amounts {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Главная страница -->
+        <div class="page active" id="home">
+            <div class="app-header">
+                <div class="logo">
+                    <i class="fas fa-sms"></i>
+                </div>
+                <h1>SMS Mailing</h1>
+                <p class="subtitle">Отправляйте СМС рассылки быстро и удобно. Идеально для бизнеса и уведомлений.</p>
+                <div class="prices">
+                    <div class="price-badge">
+                        <i class="fas fa-gem"></i> 1 СМС = 1 USDT
+                    </div>
+                    <div class="price-badge">
+                        <i class="fas fa-bolt"></i> 1 СМС = 1.63 TON
+                    </div>
+                </div>
+            </div>
+
+            <div class="balance-card">
+                <div class="balance-item">
+                    <div class="currency">
+                        <i class="fas fa-gem"></i> USDT
+                    </div>
+                    <div class="amount">
+                        <span class="currency-symbol">$</span>
+                        <span id="balance-usdt">0</span>
+                    </div>
+                </div>
+                <div class="balance-item">
+                    <div class="currency">
+                        <i class="fas fa-bolt"></i> TON
+                    </div>
+                    <div class="amount">
+                        <span class="currency-symbol">⏣</span>
+                        <span id="balance-ton">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Быстрые действия</h2>
+                <button class="btn" onclick="showPage('mailing')">
+                    <i class="fas fa-paper-plane"></i>
+                    Запустить рассылку
+                </button>
+                <button class="btn btn-secondary" onclick="showPage('deposit')">
+                    <i class="fas fa-wallet"></i>
+                    Пополнить баланс
+                </button>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Статистика</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-sms">0</div>
+                        <div class="stat-label">Всего СМС</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-cost">0</div>
+                        <div class="stat-label">Общая стоимость</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="success-rate">100%</div>
+                        <div class="stat-label">Успешных</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="pending">0</div>
+                        <div class="stat-label">В ожидании</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Страница рассылки -->
+        <div class="page" id="mailing">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-paper-plane"></i>
+                    Новая рассылка
+                </div>
+                
+                <div class="input-group">
+                    <label for="phone-numbers">
+                        <i class="fas fa-phone"></i> Номера телефонов
+                    </label>
+                    <textarea 
+                        id="phone-numbers" 
+                        rows="5" 
+                        placeholder="Введите номера через точку с запятой:
++79991234567;
+89991234567;
+79001234567;"
+                    ></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="sms-text">
+                        <i class="fas fa-comment-alt"></i> Текст СМС
+                    </label>
+                    <textarea 
+                        id="sms-text" 
+                        rows="4" 
+                        placeholder="Введите текст сообщения..."
+                        maxlength="1600"
+                    ></textarea>
+                    <div style="text-align: right; margin-top: 5px; font-size: 14px; color: #666;">
+                        <span id="char-count">0</span>/1600 символов
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <p><strong>Формат номеров:</strong><br>
+                    • Начинаются на +7, 7 или 8<br>
+                    • Разделяются точкой с запятой (;)<br>
+                    • Каждый номер с новой строки</p>
+                </div>
+
+                <div class="info-box">
+                    <p><strong>Стоимость:</strong><br>
+                    • 1 номер = 1 USDT или 1.63 TON<br>
+                    • К оплате: <span id="sms-cost">0</span> USDT / <span id="sms-cost-ton">0</span> TON</p>
+                </div>
+
+                <button class="btn" onclick="submitMailing()">
+                    <i class="fas fa-paper-plane"></i>
+                    Отправить на модерацию
+                </button>
+                <button class="btn btn-secondary" onclick="showPage('home')">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад
+                </button>
+            </div>
+        </div>
+
+        <!-- Страница пополнения -->
+        <div class="page" id="deposit">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-wallet"></i>
+                    Пополнение баланса
+                </div>
+
+                <div class="deposit-options">
+                    <div class="deposit-option active" onclick="selectCurrency('USDT')">
+                        <i class="fas fa-gem"></i>
+                        <div class="currency">USDT</div>
+                        <div style="font-size: 12px; color: #666;">TRON (TRC20)</div>
+                    </div>
+                    <div class="deposit-option" onclick="selectCurrency('TON')">
+                        <i class="fas fa-bolt"></i>
+                        <div class="currency">TON</div>
+                        <div style="font-size: 12px; color: #666;">The Open Network</div>
+                    </div>
+                </div>
+
+                <div class="deposit-amounts">
+                    <div class="amount-btn active" onclick="selectAmount(10)">10</div>
+                    <div class="amount-btn" onclick="selectAmount(25)">25</div>
+                    <div class="amount-btn" onclick="selectAmount(50)">50</div>
+                    <div class="amount-btn" onclick="selectAmount(100)">100</div>
+                    <div class="amount-btn" onclick="selectAmount(250)">250</div>
+                    <div class="amount-btn" onclick="selectCustomAmount()">Другая</div>
+                </div>
+
+                <div class="custom-amount" id="custom-amount-section" style="display: none;">
+                    <div class="input-group">
+                        <label>Сумма пополнения (<span id="selected-currency">USDT</span>)</label>
+                        <input 
+                            type="number" 
+                            id="custom-amount-input" 
+                            placeholder="Введите сумму"
+                            min="10"
+                            step="0.1"
+                        >
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                            Минимальная сумма: 10 <span id="min-currency">USDT</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box" id="deposit-info">
+                    <p><strong>USDT (TRON TRC20)</strong><br>
+                    Отправьте точную сумму на указанный адрес.<br>
+                    Комиссию оплачивает отправитель.</p>
+                </div>
+
+                <div class="address-box" id="deposit-address">
+                    TJSgjT9n1234567890abcdefghijklmnop
+                </div>
+
+                <button class="btn" onclick="copyAddress()">
+                    <i class="fas fa-copy"></i>
+                    Скопировать адрес
+                </button>
+                <button class="btn btn-secondary" onclick="showPage('home')">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад
+                </button>
+            </div>
+        </div>
+
+        <!-- Страница истории -->
+        <div class="page" id="history">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-history"></i>
+                    История операций
+                </div>
+                
+                <div id="transactions-list">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Загрузка истории...</p>
+                    </div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="showPage('home')">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад
+                </button>
+            </div>
+        </div>
+
+        <!-- Нижняя навигация -->
+        <div class="nav-bottom">
+            <button class="nav-btn active" onclick="showPage('home')">
+                <i class="fas fa-home"></i>
+                <span>Главная</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('mailing')">
+                <i class="fas fa-paper-plane"></i>
+                <span>Рассылка</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('deposit')">
+                <i class="fas fa-wallet"></i>
+                <span>Пополнение</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('history')">
+                <i class="fas fa-history"></i>
+                <span>История</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.MainButton.hide();
+
+        // Состояние приложения
+        let appState = {
+            balance: {
+                usdt: 0,
+                ton: 0
+            },
+            selectedCurrency: 'USDT',
+            selectedAmount: 10,
+            transactions: []
+        };
+
+        // DOM элементы
+        const elements = {
+            balanceUsdt: document.getElementById('balance-usdt'),
+            balanceTon: document.getElementById('balance-ton'),
+            smsCost: document.getElementById('sms-cost'),
+            smsCostTon: document.getElementById('sms-cost-ton'),
+            phoneNumbers: document.getElementById('phone-numbers'),
+            smsText: document.getElementById('sms-text'),
+            charCount: document.getElementById('char-count'),
+            depositInfo: document.getElementById('deposit-info'),
+            depositAddress: document.getElementById('deposit-address'),
+            selectedCurrency: document.getElementById('selected-currency'),
+            minCurrency: document.getElementById('min-currency'),
+            customAmountSection: document.getElementById('custom-amount-section'),
+            customAmountInput: document.getElementById('custom-amount-input'),
+            transactionsList: document.getElementById('transactions-list')
+        };
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Счетчик символов в СМС
+            elements.smsText.addEventListener('input', function() {
+                elements.charCount.textContent = this.value.length;
+                updateSMSCost();
+            });
+
+            // Обновление стоимости при вводе номеров
+            elements.phoneNumbers.addEventListener('input', updateSMSCost);
+
+            // Кастомная сумма пополнения
+            elements.customAmountInput.addEventListener('input', function() {
+                const amount = parseFloat(this.value) || 0;
+                if (amount >= 10) {
+                    appState.selectedAmount = amount;
+                    updateDepositAddress();
+                }
+            });
+        }
+
+        function showPage(pageId) {
+            // Скрыть все страницы
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Показать выбранную страницу
+            document.getElementById(pageId).classList.add('active');
+
+            // Обновить активную кнопку навигации
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Найти соответствующую кнопку навигации
+            const navBtn = document.querySelector(`.nav-btn[onclick*="${pageId}"]`);
+            if (navBtn) {
+                navBtn.classList.add('active');
+            } else {
+                // Если страница не в навигации, сделать активной главную
+                document.querySelector('.nav-btn[onclick*="home"]').classList.add('active');
+            }
+
+            // Загрузить данные для страницы
+            switch(pageId) {
+                case 'history':
+                    loadTransactions();
+                    break;
+                case 'mailing':
+                    updateSMSCost();
+                    break;
+            }
+        }
+
+        function loadUserData() {
+            // Здесь будет загрузка данных с сервера
+            // Временные данные для демонстрации
+            appState.balance.usdt = 25.5;
+            appState.balance.ton = 15.2;
+            
+            // Обновить интерфейс
+            elements.balanceUsdt.textContent = appState.balance.usdt.toFixed(2);
+            elements.balanceTon.textContent = appState.balance.ton.toFixed(2);
+            
+            // Обновить статистику
+            updateStatistics();
+        }
+
+        function updateStatistics() {
+            // Временные данные
+            document.getElementById('total-sms').textContent = '42';
+            document.getElementById('total-cost').textContent = '35.2';
+            document.getElementById('success-rate').textContent = '98%';
+            document.getElementById('pending').textContent = '2';
+        }
+
+        function selectCurrency(currency) {
+            appState.selectedCurrency = currency;
+            
+            // Обновить UI
+            document.querySelectorAll('.deposit-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            if (currency === 'USDT') {
+                document.querySelectorAll('.deposit-option')[0].classList.add('active');
+                elements.depositInfo.innerHTML = `
+                    <p><strong>USDT (TRON TRC20)</strong><br>
+                    Отправьте точную сумму на указанный адрес.<br>
+                    Комиссию оплачивает отправитель.</p>
+                `;
+                elements.selectedCurrency.textContent = 'USDT';
+                elements.minCurrency.textContent = 'USDT';
+            } else {
+                document.querySelectorAll('.deposit-option')[1].classList.add('active');
+                elements.depositInfo.innerHTML = `
+                    <p><strong>TON (The Open Network)</strong><br>
+                    Отправьте точную сумму на указанный адрес.<br>
+                    Комиссию оплачивает отправитель.</p>
+                `;
+                elements.selectedCurrency.textContent = 'TON';
+                elements.minCurrency.textContent = 'TON';
+            }
+            
+            updateDepositAddress();
+        }
+
+        function selectAmount(amount) {
+            appState.selectedAmount = amount;
+            
+            // Обновить UI
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseFloat(btn.textContent) === amount || 
+                    (btn.textContent === 'Другая' && amount === 'custom')) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            if (amount !== 'custom') {
+                elements.customAmountSection.style.display = 'none';
+                updateDepositAddress();
+            }
+        }
+
+        function selectCustomAmount() {
+            selectAmount('custom');
+            elements.customAmountSection.style.display = 'block';
+            elements.customAmountInput.focus();
+        }
+
+        function updateDepositAddress() {
+            // Генерация адреса в зависимости от валюты и суммы
+            if (appState.selectedCurrency === 'USDT') {
+                elements.depositAddress.textContent = 'TJSgjT9n1234567890abcdefghijklmnop';
+            } else {
+                elements.depositAddress.textContent = 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N';
+            }
+        }
+
+        function updateSMSCost() {
+            const numbersText = elements.phoneNumbers.value;
+            const numbers = numbersText.split(';')
+                .map(n => n.trim())
+                .filter(n => n.length > 5);
+            
+            const count = numbers.length;
+            const costUSDT = count * 1; // 1 USDT за СМС
+            const costTON = count * 1.63; // 1.63 TON за СМС
+            
+            elements.smsCost.textContent = costUSDT.toFixed(2);
+            elements.smsCostTon.textContent = costTON.toFixed(2);
+        }
+
+        function copyAddress() {
+            const address = elements.depositAddress.textContent;
+            navigator.clipboard.writeText(address)
+                .then(() => {
+                    tg.showAlert('Адрес скопирован в буфер обмена!');
+                })
+                .catch(err => {
+                    tg.showAlert('Ошибка копирования: ' + err);
+                });
+        }
+
+        function submitMailing() {
+            const numbers = elements.phoneNumbers.value.trim();
+            const text = elements.smsText.value.trim();
+            
+            if (!numbers) {
+                tg.showAlert('Введите номера телефонов!');
+                return;
+            }
+            
+            if (!text) {
+                tg.showAlert('Введите текст СМС!');
+                return;
+            }
+            
+            const count = numbers.split(';')
+                .map(n => n.trim())
+                .filter(n => n.length > 5)
+                .length;
+            
+            const costUSDT = count * 1;
+            const costTON = count * 1.63;
+            
+            // Проверка баланса
+            if (appState.balance.usdt < costUSDT && appState.balance.ton < costTON) {
+                tg.showAlert(`Недостаточно средств!\nТребуется: ${costUSDT} USDT или ${costTON} TON`);
+                return;
+            }
+            
+            // Здесь будет отправка данных на сервер
+            tg.showAlert(`Заявка отправлена на модерацию!\nНомеров: ${count}\nСтоимость: ${costUSDT} USDT или ${costTON} TON`);
+            
+            // Очистить форму
+            elements.phoneNumbers.value = '';
+            elements.smsText.value = '';
+            elements.charCount.textContent = '0';
+            
+            // Вернуться на главную
+            showPage('home');
+        }
+
+        function loadTransactions() {
+            // Временные данные для демонстрации
+            const transactions = [
+                { type: 'deposit', amount: 25, currency: 'USDT', date: '2024-01-20 14:30' },
+                { type: 'payment', amount: 10, currency: 'USDT', date: '2024-01-19 11:15' },
+                { type: 'deposit', amount: 50, currency: 'TON', date: '2024-01-18 09:45' },
+                { type: 'payment', amount: 8.15, currency: 'TON', date: '2024-01-17 16:20' },
+                { type: 'deposit', amount: 100, currency: 'USDT', date: '2024-01-16 13:10' }
+            ];
+            
+            let html = '';
+            
+            transactions.forEach(transaction => {
+                const isDeposit = transaction.type === 'deposit';
+                const icon = isDeposit ? 'fa-arrow-down' : 'fa-arrow-up';
+                const colorClass = isDeposit ? 'deposit' : 'payment';
+                const sign = isDeposit ? '+' : '-';
+                
+                html += `
+                    <div class="history-item">
+                        <div class="history-type">
+                            <div class="history-icon ${colorClass}">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                            <div class="history-details">
+                                <h4>${isDeposit ? 'Пополнение' : 'Оплата рассылки'}</h4>
+                                <p>${transaction.date}</p>
+                            </div>
+                        </div>
+                        <div class="history-amount">
+                            <div class="amount" style="color: ${isDeposit ? '#00c851' : '#ff4444'}">
+                                ${sign}${transaction.amount}
+                            </div>
+                            <div class="currency">${transaction.currency}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            elements.transactionsList.innerHTML = html || '<div class="loading"><p>Нет транзакций</p></div>';
+        }
+
+        // Инициализация при загрузке
+        loadUserData();
+        updateSMSCost();
+    </script>
+</body>
+</html>
