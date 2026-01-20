@@ -1165,7 +1165,7 @@
             </button>
         </div>
 
-        <!-- Новая страница заявок на рассылку (только для админа) -->
+        <!-- Страница заявок на рассылку -->
         <div class="page" id="admin-requests">
             <div class="card">
                 <div class="card-title">
@@ -1806,14 +1806,7 @@
         }
 
         function loadAdminPanel() {
-            const stats = statsDB.getStats();
-            const users = userDB.getAllUsers();
-            
-            document.getElementById('admin-total-users').textContent = users.length;
-            document.getElementById('admin-total-mailings').textContent = stats.totalSMS;
-            document.getElementById('admin-pending').textContent = stats.pending;
-            document.getElementById('admin-total-balance').textContent = stats.totalRevenue.toFixed(2);
-            
+            // Просто показываем раздел по умолчанию
             showAdminSection('payments');
         }
 
@@ -2117,28 +2110,46 @@
                     break;
                     
                 case 'users':
+                    const users = userDB.getAllUsers();
+                    let usersHtml = '';
+                    
+                    if (users.length === 0) {
+                        usersHtml = '<p style="text-align: center; color: #666; padding: 20px;">Нет пользователей</p>';
+                    } else {
+                        users.forEach(user => {
+                            usersHtml += `
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>${user.firstName}</h4>
+                                        <p>ID: ${user.userId} • @${user.username}</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">${user.balance.usdt.toFixed(2)}</div>
+                                        <div class="currency">USDT</div>
+                                        <div class="amount">${user.balance.ton.toFixed(2)}</div>
+                                        <div class="currency">TON</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    
                     content = `
                         <div class="card">
                             <div class="card-title">
                                 <i class="fas fa-users"></i>
                                 Управление пользователями
                             </div>
-                            <div class="user-list" id="users-list">
-                                <div class="loading">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <p>Загрузка пользователей...</p>
-                                </div>
+                            <div class="user-list">
+                                ${usersHtml}
                             </div>
                         </div>
                     `;
-                    setTimeout(() => {
-                        loadUsersList();
-                    }, 0);
                     break;
                     
                 case 'stats':
                     const stats = statsDB.getStats();
-                    const users = userDB.getAllUsers();
+                    const allUsers = userDB.getAllUsers();
                     const successRate = stats.totalSMS > 0 ? Math.round((stats.successful / stats.totalSMS) * 100) : 0;
                     
                     content = `
@@ -2149,7 +2160,7 @@
                             </div>
                             <div class="admin-stats-grid">
                                 <div class="admin-stat-item">
-                                    <div class="admin-stat-value">${users.length}</div>
+                                    <div class="admin-stat-value">${allUsers.length}</div>
                                     <div class="admin-stat-label">Всего пользователей</div>
                                 </div>
                                 <div class="admin-stat-item">
@@ -2225,38 +2236,6 @@
             elements.adminContent.innerHTML = content;
         }
 
-        function loadUsersList() {
-            let html = '';
-            
-            const users = userDB.getAllUsers();
-            
-            if (users.length === 0) {
-                html = '<p style="text-align: center; color: #666; padding: 20px;">Нет пользователей</p>';
-            } else {
-                users.forEach(user => {
-                    html += `
-                        <div class="user-item">
-                            <div class="user-info">
-                                <h4>${user.firstName}</h4>
-                                <p>ID: ${user.userId} • @${user.username}</p>
-                            </div>
-                            <div class="user-balance">
-                                <div class="amount">${user.balance.usdt.toFixed(2)}</div>
-                                <div class="currency">USDT</div>
-                                <div class="amount">${user.balance.ton.toFixed(2)}</div>
-                                <div class="currency">TON</div>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-            
-            const listElement = document.getElementById('users-list');
-            if (listElement) {
-                listElement.innerHTML = html;
-            }
-        }
-
         function confirmPayment(paymentId) {
             const paymentRequests = JSON.parse(localStorage.getItem('sms_mailing_payment_requests') || '[]');
             const paymentIndex = paymentRequests.findIndex(p => p.id === paymentId);
@@ -2312,18 +2291,6 @@
             localStorage.setItem('sms_mailing_settings', JSON.stringify(settings));
             
             tg.showAlert('Настройки сохранены!');
-        }
-
-        function loadSettings() {
-            const settingsJson = localStorage.getItem('sms_mailing_settings');
-            if (settingsJson) {
-                return JSON.parse(settingsJson);
-            }
-            return {
-                priceUsdt: 1,
-                priceTon: 0.65,
-                minDeposit: 10
-            };
         }
 
         function loadTransactions() {
