@@ -1153,7 +1153,7 @@
             // Здесь будет загрузка данных с сервера
             // Временные данные для демонстрации
             appState.balance.usdt = 25.5;
-            appState.balance.appState.balance.ton = 15.2;
+            appState.balance.ton = 15.2;
             
             // Обновить интерфейс
             elements.balanceUsdt.textContent = appState.balance.usdt.toFixed(2);
@@ -1367,50 +1367,18 @@
                                 <i class="fas fa-money-check-alt"></i>
                                 Список платежей
                             </div>
-                            <div class="user-list">
-                                <div class="user-item">
-                                    <div class="user-info">
-                                        <h4>Пополнение USDT</h4>
-                                        <p>ID: 1001 • 2024-01-20 14:30</p>
-                                    </div>
-                                    <div class="user-balance">
-                                        <div class="amount">+25.00</div>
-                                        <div class="currency">USDT</div>
-                                    </div>
-                                </div>
-                                <div class="user-item">
-                                    <div class="user-info">
-                                        <h4>Оплата рассылки</h4>
-                                        <p>ID: 1002 • 2024-01-19 11:15</p>
-                                    </div>
-                                    <div class="user-balance">
-                                        <div class="amount" style="color: #ff4444;">-10.00</div>
-                                        <div class="currency">USDT</div>
-                                    </div>
-                                </div>
-                                <div class="user-item">
-                                    <div class="user-info">
-                                        <h4>Пополнение TON</h4>
-                                        <p>ID: 1003 • 2024-01-18 09:45</p>
-                                    </div>
-                                    <div class="user-balance">
-                                        <div class="amount">+50.00</div>
-                                        <div class="currency">TON</div>
-                                    </div>
-                                </div>
-                                <div class="user-item">
-                                    <div class="user-info">
-                                        <h4>Оплата рассылки</h4>
-                                        <p>ID: 1004 • 2024-01-17 16:20</p>
-                                    </div>
-                                    <div class="user-balance">
-                                        <div class="amount" style="color: #ff4444;">-8.15</div>
-                                        <div class="currency">TON</div>
-                                    </div>
+                            <div class="user-list" id="payment-requests-list">
+                                <div class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Загрузка платежей...</p>
                                 </div>
                             </div>
                         </div>
                     `;
+                    // После добавления в DOM загружаем платежи
+                    setTimeout(() => {
+                        loadPaymentRequests();
+                    }, 0);
                     break;
                     
                 case 'mailings':
@@ -1561,6 +1529,150 @@
             }
             
             elements.adminContent.innerHTML = content;
+        }
+
+        function loadPaymentRequests() {
+            // Временные данные для демонстрации
+            const paymentRequests = [
+                { 
+                    id: 1, 
+                    userId: 123456, 
+                    username: '@user_ivanov',
+                    hash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+                    amount: 25,
+                    currency: 'USDT',
+                    date: '2024-01-20 14:30',
+                    status: 'pending'
+                },
+                { 
+                    id: 2, 
+                    userId: 123457, 
+                    username: '@sms_master',
+                    hash: '0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
+                    amount: 50,
+                    currency: 'TON',
+                    date: '2024-01-20 13:15',
+                    status: 'pending'
+                },
+                { 
+                    id: 3, 
+                    userId: 123458, 
+                    username: '@business_owner',
+                    hash: '0xa1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890',
+                    amount: 100,
+                    currency: 'USDT',
+                    date: '2024-01-20 12:00',
+                    status: 'pending'
+                }
+            ];
+            
+            let html = '';
+            
+            if (paymentRequests.length === 0) {
+                html = '<p style="text-align: center; color: #666; padding: 20px;">Нет запросов на оплату</p>';
+            } else {
+                paymentRequests.forEach(payment => {
+                    html += `
+                        <div class="payment-request" id="payment-${payment.id}" style="margin-bottom: 15px; padding: 15px; border: 2px solid #d1ecff; border-radius: 10px; background: #f8fdff;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                <div>
+                                    <h4 style="margin: 0 0 5px 0; color: #333;">ID: ${payment.id}</h4>
+                                    <p style="margin: 0; color: #666; font-size: 14px;">
+                                        Пользователь: ${payment.username}<br>
+                                        Дата: ${payment.date}
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #0088cc;">
+                                        ${payment.amount} ${payment.currency}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Хеш транзакции:</div>
+                                <div style="background: white; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; word-break: break-all; color: #333;">
+                                    ${payment.hash}
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="confirmPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #00c851, #5eff8f); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fas fa-check"></i>
+                                    Подтвердить
+                                </button>
+                                <button onclick="cancelPayment(${payment.id})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ff4444, #ff8888); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fas fa-times"></i>
+                                    Отменить
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            const listElement = document.getElementById('payment-requests-list');
+            if (listElement) {
+                listElement.innerHTML = html;
+            }
+        }
+
+        function confirmPayment(paymentId) {
+            // Здесь будет запрос на сервер для подтверждения платежа
+            
+            // Временная реализация
+            const paymentElement = document.getElementById(`payment-${paymentId}`);
+            if (paymentElement) {
+                paymentElement.style.borderColor = '#00c851';
+                paymentElement.style.background = '#f0fff4';
+                
+                // Показываем статус
+                const statusDiv = document.createElement('div');
+                statusDiv.style.marginTop = '10px';
+                statusDiv.style.padding = '8px';
+                statusDiv.style.background = '#00c851';
+                statusDiv.style.color = 'white';
+                statusDiv.style.borderRadius = '5px';
+                statusDiv.style.textAlign = 'center';
+                statusDiv.style.fontSize = '14px';
+                statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Платеж подтвержден';
+                
+                paymentElement.querySelector('.payment-request > div:first-child').appendChild(statusDiv);
+                
+                // Скрываем кнопки
+                paymentElement.querySelector('div:last-child').style.display = 'none';
+                
+                tg.showAlert(`Платеж #${paymentId} подтвержден! Баланс пользователя пополнен.`);
+            }
+        }
+
+        function cancelPayment(paymentId) {
+            // Здесь будет запрос на сервер для отмены платежа
+            
+            // Временная реализация
+            const paymentElement = document.getElementById(`payment-${paymentId}`);
+            if (paymentElement) {
+                paymentElement.style.borderColor = '#ff4444';
+                paymentElement.style.background = '#fff0f0';
+                
+                // Показываем статус
+                const statusDiv = document.createElement('div');
+                statusDiv.style.marginTop = '10px';
+                statusDiv.style.padding = '8px';
+                statusDiv.style.background = '#ff4444';
+                statusDiv.style.color = 'white';
+                statusDiv.style.borderRadius = '5px';
+                statusDiv.style.textAlign = 'center';
+                statusDiv.style.fontSize = '14px';
+                statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Платеж отменен';
+                
+                paymentElement.querySelector('.payment-request > div:first-child').appendChild(statusDiv);
+                
+                // Скрываем кнопки
+                paymentElement.querySelector('div:last-child').style.display = 'none';
+                
+                tg.showAlert(`Платеж #${paymentId} отменен! Пользователю отправлено уведомление.`);
+            }
         }
 
         function loadTransactions() {
