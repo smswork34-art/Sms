@@ -1065,7 +1065,8 @@
             selectedCurrency: 'USDT',
             selectedAmount: 10,
             transactions: [],
-            isAdmin: false
+            isAdmin: false,
+            paymentRequests: [] // Массив для хранения запросов на оплату
         };
 
         // DOM элементы
@@ -1095,6 +1096,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadUserData();
             setupEventListeners();
+            
+            // Загружаем сохраненные запросы на оплату из localStorage
+            loadPaymentRequestsFromStorage();
         });
 
         function setupEventListeners() {
@@ -1287,8 +1291,33 @@
                 return;
             }
             
-            // Здесь будет отправка данных на сервер
-            tg.showAlert(`Платеж отправлен на проверку!\nСумма: ${amount} ${currency}\nХеш: ${hash.substring(0, 20)}...`);
+            // Получаем данные пользователя из Telegram
+            const user = tg.initDataUnsafe?.user || {
+                id: Math.floor(Math.random() * 1000000),
+                username: 'user_' + Math.floor(Math.random() * 1000),
+                first_name: 'Пользователь'
+            };
+            
+            // Создаем запрос на оплату
+            const paymentRequest = {
+                id: Date.now(), // уникальный ID
+                userId: user.id,
+                username: user.username || `user_${user.id}`,
+                firstName: user.first_name || 'Пользователь',
+                hash: hash,
+                amount: amount,
+                currency: currency,
+                date: new Date().toLocaleString('ru-RU'),
+                status: 'pending'
+            };
+            
+            // Добавляем в массив запросов
+            appState.paymentRequests.push(paymentRequest);
+            
+            // Сохраняем в localStorage
+            savePaymentRequestsToStorage();
+            
+            tg.showAlert(`Платеж отправлен на проверку!\nСумма: ${amount} ${currency}\nХеш: ${hash.substring(0, 20)}...\nАдмин рассмотрит ваш платеж в ближайшее время.`);
             
             // Сбросить форму
             elements.txHash.value = '';
@@ -1544,54 +1573,37 @@
             elements.adminContent.innerHTML = content;
         }
 
+        function savePaymentRequestsToStorage() {
+            // Сохраняем запросы на оплату в localStorage
+            localStorage.setItem('sms_mailing_payment_requests', JSON.stringify(appState.paymentRequests));
+        }
+
+        function loadPaymentRequestsFromStorage() {
+            // Загружаем запросы на оплату из localStorage
+            const savedRequests = localStorage.getItem('sms_mailing_payment_requests');
+            if (savedRequests) {
+                appState.paymentRequests = JSON.parse(savedRequests);
+            }
+        }
+
         function loadPaymentRequests() {
-            // Временные данные для демонстрации
-            const paymentRequests = [
-                { 
-                    id: 1, 
-                    userId: 123456, 
-                    username: '@user_ivanov',
-                    hash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-                    amount: 25,
-                    currency: 'USDT',
-                    date: '2024-01-20 14:30',
-                    status: 'pending'
-                },
-                { 
-                    id: 2, 
-                    userId: 123457, 
-                    username: '@sms_master',
-                    hash: '0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
-                    amount: 50,
-                    currency: 'TON',
-                    date: '2024-01-20 13:15',
-                    status: 'pending'
-                },
-                { 
-                    id: 3, 
-                    userId: 123458, 
-                    username: '@business_owner',
-                    hash: '0xa1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890',
-                    amount: 100,
-                    currency: 'USDT',
-                    date: '2024-01-20 12:00',
-                    status: 'pending'
-                }
-            ];
-            
             let html = '';
             
-            if (paymentRequests.length === 0) {
+            // Фильтруем только ожидающие платежи
+            const pendingRequests = appState.paymentRequests.filter(p => p.status === 'pending');
+            
+            if (pendingRequests.length === 0) {
                 html = '<p style="text-align: center; color: #666; padding: 20px;">Нет запросов на оплату</p>';
             } else {
-                paymentRequests.forEach(payment => {
+                pendingRequests.forEach(payment => {
                     html += `
                         <div class="payment-request" id="payment-${payment.id}" style="margin-bottom: 15px; padding: 15px; border: 2px solid #d1ecff; border-radius: 10px; background: #f8fdff;">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                                 <div>
-                                    <h4 style="margin: 0 0 5px 0; color: #333;">ID: ${payment.id}</h4>
+                                    <h4 style="margin: 0 0 5px 0; color: #333;">Пользователь: ${payment.firstName}</h4>
                                     <p style="margin: 0; color: #666; font-size: 14px;">
-                                        Пользователь: ${payment.username}<br>
+                                        ID: ${payment.userId}<br>
+                                        @${payment.username}<br>
                                         Дата: ${payment.date}
                                     </p>
                                 </div>
@@ -1631,9 +1643,19 @@
         }
 
         function confirmPayment(paymentId) {
-            // Здесь будет запрос на сервер для подтверждения платежа
+            // Находим платеж в массиве
+            const paymentIndex = appState.paymentRequests.findIndex(p => p.id === paymentId);
+            if (paymentIndex === -1) return;
             
-            // Временная реализация
+            const payment = appState.paymentRequests[paymentIndex];
+            
+            // Обновляем статус платежа
+            appState.paymentRequests[paymentIndex].status = 'confirmed';
+            
+            // Сохраняем изменения
+            savePaymentRequestsToStorage();
+            
+            // Обновляем отображение
             const paymentElement = document.getElementById(`payment-${paymentId}`);
             if (paymentElement) {
                 paymentElement.style.borderColor = '#00c851';
@@ -1660,9 +1682,19 @@
         }
 
         function cancelPayment(paymentId) {
-            // Здесь будет запрос на сервер для отмены платежа
+            // Находим платеж в массиве
+            const paymentIndex = appState.paymentRequests.findIndex(p => p.id === paymentId);
+            if (paymentIndex === -1) return;
             
-            // Временная реализация
+            const payment = appState.paymentRequests[paymentIndex];
+            
+            // Обновляем статус платежа
+            appState.paymentRequests[paymentIndex].status = 'cancelled';
+            
+            // Сохраняем изменения
+            savePaymentRequestsToStorage();
+            
+            // Обновляем отображение
             const paymentElement = document.getElementById(`payment-${paymentId}`);
             if (paymentElement) {
                 paymentElement.style.borderColor = '#ff4444';
