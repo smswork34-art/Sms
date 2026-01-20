@@ -1131,8 +1131,40 @@
                     isAdmin: true
                 };
 
+                // Добавляем тестовые платежи
+                const testPayment1 = {
+                    id: Date.now(),
+                    userId: 123456,
+                    username: 'test_user',
+                    firstName: 'Тестовый Пользователь',
+                    hash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+                    amount: 50,
+                    currency: 'USDT',
+                    date: new Date().toISOString(),
+                    status: 'pending',
+                    type: 'deposit',
+                    adminNote: ''
+                };
+
+                const testPayment2 = {
+                    id: Date.now() + 1,
+                    userId: 654321,
+                    username: 'another_user',
+                    firstName: 'Другой Пользователь',
+                    hash: '0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
+                    amount: 25,
+                    currency: 'TON',
+                    date: new Date().toISOString(),
+                    status: 'pending',
+                    type: 'deposit',
+                    adminNote: ''
+                };
+
+                db.payments[testPayment1.id] = testPayment1;
+                db.payments[testPayment2.id] = testPayment2;
+
                 localStorage.setItem(this.dbName, JSON.stringify(db));
-                console.log('База данных инициализирована');
+                console.log('База данных инициализирована с тестовыми данными');
             }
 
             getDB() {
@@ -1624,6 +1656,8 @@
             tg.showAlert('Пожалуйста, введите HASH транзакции после оплаты');
         }
 
+        // ==================== ФУНКЦИИ ДЛЯ ПЛАТЕЖЕЙ ====================
+
         function submitPayment() {
             const hash = elements.txHash.value.trim();
             const amount = appState.selectedAmount;
@@ -1648,7 +1682,7 @@
             // Создаем или получаем пользователя
             const user = db.getOrCreateUser(tgUser);
             
-            // Создаем запись о платеже
+            // Создаем запись о платеже в базе данных
             const payment = db.createPayment({
                 userId: user.userId,
                 username: user.username,
@@ -1699,6 +1733,8 @@
                 console.error('Ошибка отправки в Telegram:', error);
             });
         }
+
+        // ==================== ФУНКЦИИ ДЛЯ РАССЫЛОК ====================
 
         function submitMailing() {
             const numbers = elements.phoneNumbers.value.trim();
@@ -1780,6 +1816,8 @@
             showPage('home');
         }
 
+        // ==================== ФУНКЦИИ АДМИН ПАНЕЛИ ====================
+
         function showAdminAccess() {
             elements.adminAccessSection.classList.add('active');
             elements.adminKey.focus();
@@ -1831,14 +1869,18 @@
                                 <i class="fas fa-money-check-alt"></i>
                                 Список платежей
                             </div>
-                            <div style="margin-bottom: 15px;">
+                            <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                                 <button class="btn btn-secondary" onclick="refreshPaymentsList()" style="padding: 10px 15px;">
                                     <i class="fas fa-sync"></i>
                                     Обновить
                                 </button>
-                                <button class="btn" onclick="showAllPayments()" style="padding: 10px 15px; margin-left: 10px;">
+                                <button class="btn" onclick="showAllPayments()" style="padding: 10px 15px;">
                                     <i class="fas fa-list"></i>
                                     Все платежи
+                                </button>
+                                <button class="btn btn-admin" onclick="addTestPayments()" style="padding: 10px 15px;">
+                                    <i class="fas fa-vial"></i>
+                                    Тестовые данные
                                 </button>
                             </div>
                             <div class="user-list" id="payment-requests-list">
@@ -1976,6 +2018,9 @@
             if (payments.length === 0) {
                 html = '<p style="text-align: center; color: #666; padding: 20px;">Нет платежей на проверке</p>';
             } else {
+                // Сортируем по дате (новые сверху)
+                payments.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
                 payments.forEach(payment => {
                     const date = new Date(payment.date).toLocaleString('ru-RU');
                     html += `
@@ -2068,6 +2113,32 @@
             if (listElement) {
                 listElement.innerHTML = html;
             }
+        }
+
+        function addTestPayments() {
+            const testPayment1 = {
+                userId: 999888,
+                username: 'test_user_3',
+                firstName: 'Тест Три',
+                hash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+                amount: 75,
+                currency: 'USDT'
+            };
+
+            const testPayment2 = {
+                userId: 777666,
+                username: 'test_user_4',
+                firstName: 'Тест Четыре',
+                hash: '0x0987654321abcdef0987654321abcdef0987654321abcdef0987654321abcdef',
+                amount: 150,
+                currency: 'TON'
+            };
+
+            db.createPayment(testPayment1);
+            db.createPayment(testPayment2);
+            
+            tg.showAlert('Добавлены тестовые платежи!');
+            refreshPaymentsList();
         }
 
         function refreshMailingsList() {
@@ -2165,7 +2236,10 @@
 
         function confirmPayment(paymentId) {
             const payment = db.getPayment(paymentId);
-            if (!payment) return;
+            if (!payment) {
+                tg.showAlert('Платеж не найден!');
+                return;
+            }
             
             db.updatePaymentStatus(paymentId, 'confirmed', 'Платеж подтвержден администратором');
             
@@ -2188,7 +2262,10 @@
 
         function rejectPayment(paymentId) {
             const payment = db.getPayment(paymentId);
-            if (!payment) return;
+            if (!payment) {
+                tg.showAlert('Платеж не найден!');
+                return;
+            }
             
             const reason = prompt('Укажите причину отклонения платежа:', 'Неверный хеш транзакции');
             if (reason === null) return;
