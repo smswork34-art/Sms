@@ -24,7 +24,7 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding-bottom: 140 px;
+            padding-bottom: 80px;
         }
 
         .app-header {
@@ -234,13 +234,12 @@
             left: 0;
             right: 0;
             background: white;
-            padding: 10px 20px;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-around;
             border-top-left-radius: 20px;
             border-top-right-radius: 20px;
             box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
-            height: 60px;
         }
 
         .nav-btn {
@@ -522,6 +521,134 @@
             animation: fadeIn 0.3s ease;
         }
 
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(142, 68, 173, 0.2);
+            text-align: center;
+        }
+
+        .admin-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            border-radius: 15px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: white;
+        }
+
+        .admin-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .admin-stat-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(142, 68, 173, 0.1);
+        }
+
+        .admin-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #8e44ad;
+            margin-bottom: 5px;
+        }
+
+        .admin-stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .admin-menu {
+            display: grid;
+            gap: 10px;
+        }
+
+        .admin-btn {
+            background: white;
+            border: 2px solid #e6d0f1;
+            border-radius: 12px;
+            padding: 18px 20px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .admin-btn:hover {
+            background: #f9f0ff;
+            border-color: #8e44ad;
+            transform: translateY(-2px);
+        }
+
+        .admin-btn i {
+            font-size: 20px;
+            color: #8e44ad;
+        }
+
+        .user-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info h4 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .user-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .user-balance {
+            text-align: right;
+        }
+
+        .user-balance .amount {
+            font-size: 18px;
+            font-weight: 600;
+            color: #8e44ad;
+        }
+
+        .user-balance .currency {
+            font-size: 12px;
+            color: #999;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -546,6 +673,10 @@
             
             .deposit-amounts {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .admin-stats-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -650,7 +781,6 @@
                 <i class="fas fa-user-shield"></i>
                 Вход в админ панель
             </button>
-            <div style="height: 20px;"></div>
         </div>
 
         <!-- Страница рассылки -->
@@ -828,26 +958,62 @@
             </div>
         </div>
 
-        <!-- Страница админ панели -->
-        <div class="page" id="admin">
-            <div class="card">
-                <div class="card-title">
+        <!-- Новая страница админ панели -->
+        <div class="page" id="admin-panel">
+            <div class="admin-header">
+                <div class="admin-logo">
                     <i class="fas fa-user-shield"></i>
-                    Админ панель
                 </div>
-                
-                <div id="admin-content">
-                    <div class="loading">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Загрузка админ панели...</p>
-                    </div>
+                <h1>Админ панель</h1>
+                <p class="subtitle">Управление системой SMS рассылок</p>
+            </div>
+
+            <div class="admin-stats-grid">
+                <div class="admin-stat-item">
+                    <div class="admin-stat-value" id="admin-total-users">15</div>
+                    <div class="admin-stat-label">Пользователей</div>
                 </div>
-                
-                <button class="btn btn-secondary" onclick="showPage('home')">
-                    <i class="fas fa-arrow-left"></i>
-                    Назад
+                <div class="admin-stat-item">
+                    <div class="admin-stat-value" id="admin-total-mailings">42</div>
+                    <div class="admin-stat-label">Рассылок</div>
+                </div>
+                <div class="admin-stat-item">
+                    <div class="admin-stat-value" id="admin-pending">5</div>
+                    <div class="admin-stat-label">На проверке</div>
+                </div>
+                <div class="admin-stat-item">
+                    <div class="admin-stat-value" id="admin-total-balance">120.5</div>
+                    <div class="admin-stat-label">USDT</div>
+                </div>
+            </div>
+
+            <div class="admin-menu">
+                <button class="admin-btn" onclick="showAdminSection('payments')">
+                    <i class="fas fa-money-check-alt"></i>
+                    Список платежей
+                </button>
+                <button class="admin-btn" onclick="showAdminSection('mailings')">
+                    <i class="fas fa-envelope"></i>
+                    Заявки на рассылку
+                </button>
+                <button class="admin-btn" onclick="showAdminSection('users')">
+                    <i class="fas fa-users"></i>
+                    Управление пользователями
+                </button>
+                <button class="admin-btn" onclick="showAdminSection('settings')">
+                    <i class="fas fa-cog"></i>
+                    Настройки системы
                 </button>
             </div>
+
+            <div id="admin-content" style="margin-top: 20px;">
+                <!-- Контент будет загружаться динамически -->
+            </div>
+
+            <button class="btn btn-secondary" onclick="showPage('home')" style="margin-top: 20px;">
+                <i class="fas fa-arrow-left"></i>
+                На главную
+            </button>
         </div>
 
         <!-- Нижняя навигация -->
@@ -973,7 +1139,7 @@
                     elements.hashInputSection.classList.remove('active');
                     elements.txHash.value = '';
                     break;
-                case 'admin':
+                case 'admin-panel':
                     if (appState.isAdmin) {
                         loadAdminPanel();
                     } else {
@@ -987,7 +1153,7 @@
             // Здесь будет загрузка данных с сервера
             // Временные данные для демонстрации
             appState.balance.usdt = 25.5;
-            appState.balance.ton = 15.2;
+            appState.balance.appState.balance.ton = 15.2;
             
             // Обновить интерфейс
             elements.balanceUsdt.textContent = appState.balance.usdt.toFixed(2);
@@ -1176,50 +1342,225 @@
             elements.adminAccessSection.classList.remove('active');
             
             // Перейти в админ панель
-            showPage('admin');
+            showPage('admin-panel');
         }
 
         function loadAdminPanel() {
-            // Здесь будет загрузка админ данных
-            elements.adminContent.innerHTML = `
-                <div class="info-box">
-                    <p><strong>Добро пожаловать в админ панель!</strong></p>
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value">15</div>
-                        <div class="stat-label">Пользователей</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">42</div>
-                        <div class="stat-label">Рассылок</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">5</div>
-                        <div class="stat-label">На проверке</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">120.5</div>
-                        <div class="stat-label">USDT</div>
-                    </div>
-                </div>
-                
-                <button class="btn" style="margin-top: 20px;">
-                    <i class="fas fa-list"></i>
-                    Список платежей
-                </button>
-                
-                <button class="btn" style="margin-top: 10px;">
-                    <i class="fas fa-envelope"></i>
-                    Заявки на рассылку
-                </button>
-                
-                <button class="btn" style="margin-top: 10px;">
-                    <i class="fas fa-users"></i>
-                    Управление пользователями
-                </button>
-            `;
+            // Загружаем начальную статистику
+            document.getElementById('admin-total-users').textContent = '15';
+            document.getElementById('admin-total-mailings').textContent = '42';
+            document.getElementById('admin-pending').textContent = '5';
+            document.getElementById('admin-total-balance').textContent = '120.5';
+            
+            // Показываем начальный контент
+            showAdminSection('payments');
+        }
+
+        function showAdminSection(section) {
+            let content = '';
+            
+            switch(section) {
+                case 'payments':
+                    content = `
+                        <div class="card">
+                            <div class="card-title">
+                                <i class="fas fa-money-check-alt"></i>
+                                Список платежей
+                            </div>
+                            <div class="user-list">
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>Пополнение USDT</h4>
+                                        <p>ID: 1001 • 2024-01-20 14:30</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">+25.00</div>
+                                        <div class="currency">USDT</div>
+                                    </div>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>Оплата рассылки</h4>
+                                        <p>ID: 1002 • 2024-01-19 11:15</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount" style="color: #ff4444;">-10.00</div>
+                                        <div class="currency">USDT</div>
+                                    </div>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>Пополнение TON</h4>
+                                        <p>ID: 1003 • 2024-01-18 09:45</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">+50.00</div>
+                                        <div class="currency">TON</div>
+                                    </div>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>Оплата рассылки</h4>
+                                        <p>ID: 1004 • 2024-01-17 16:20</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount" style="color: #ff4444;">-8.15</div>
+                                        <div class="currency">TON</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'mailings':
+                    content = `
+                        <div class="card">
+                            <div class="card-title">
+                                <i class="fas fa-envelope"></i>
+                                Заявки на рассылку
+                            </div>
+                            <div class="user-list">
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>ID: 2001 • 20 номеров</h4>
+                                        <p>Текст: "Акция! Скидка 20%..." • Ожидает модерации</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">20 SMS</div>
+                                        <div class="currency">20 USDT</div>
+                                    </div>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>ID: 2002 • 15 номеров</h4>
+                                        <p>Текст: "Напоминание о записи..." • Одобрено</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">15 SMS</div>
+                                        <div class="currency">15 USDT</div>
+                                    </div>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>ID: 2003 • 8 номеров</h4>
+                                        <p>Текст: "Ваш заказ готов..." • Выполняется</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">8 SMS</div>
+                                        <div class="currency">8 USDT</div>
+                                    </div>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>ID: 2004 • 50 номеров</h4>
+                                        <p>Текст: "Новое поступление..." • Отклонено</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">50 SMS</div>
+                                        <div class="currency">50 USDT</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn" style="margin-top: 15px;">
+                                <i class="fas fa-check-circle"></i>
+                                Обновить статусы
+                            </button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'users':
+                    content = `
+                        <div class="card">
+                            <div class="card-title">
+                                <i class="fas fa-users"></i>
+                                Управление пользователями
+                            </div>
+                            <div class="user-list">
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>@user_ivanov</h4>
+                                        <p>ID: 123456 • Последняя активность: сегодня</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">25.50</div>
+                                        <div class="currency">USDT</div>
+                                    </div>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>@sms_master</h4>
+                                        <p>ID: 123457 • Последняя активность: вчера</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">15.20</div>
+                                        <div class="currency">TON</div>
+                                    </div>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>@business_owner</h4>
+                                        <p>ID: 123458 • Последняя активность: 2 дня назад</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">100.00</div>
+                                        <div class="currency">USDT</div>
+                                    </div>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <h4>@notification_bot</h4>
+                                        <p>ID: 123459 • Последняя активность: неделя назад</p>
+                                    </div>
+                                    <div class="user-balance">
+                                        <div class="amount">0.00</div>
+                                        <div class="currency">USDT</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn" style="margin-top: 15px;">
+                                <i class="fas fa-search"></i>
+                                Поиск пользователя
+                            </button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'settings':
+                    content = `
+                        <div class="card">
+                            <div class="card-title">
+                                <i class="fas fa-cog"></i>
+                                Настройки системы
+                            </div>
+                            <div class="input-group">
+                                <label>Цена за 1 SMS (USDT)</label>
+                                <input type="number" value="1" min="0.1" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label>Цена за 1 SMS (TON)</label>
+                                <input type="number" value="1.63" min="0.1" step="0.01">
+                            </div>
+                            <div class="input-group">
+                                <label>Минимальное пополнение</label>
+                                <input type="number" value="10" min="1" step="1">
+                            </div>
+                            <div class="info-box">
+                                <p><strong>Кошельки для пополнения:</strong><br>
+                                USDT: TJSgjT9n1234567890abcdefghijklmnop<br>
+                                TON: EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N</p>
+                            </div>
+                            <button class="btn">
+                                <i class="fas fa-save"></i>
+                                Сохранить настройки
+                            </button>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            elements.adminContent.innerHTML = content;
         }
 
         function loadTransactions() {
