@@ -1063,8 +1063,9 @@
 
     <script>
         // ==================== КОНФИГУРАЦИЯ ====================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxMNrNjEjUtsO4iENUblnnH_wxJIrk-fxnQ8ujN_kR6P_2O3qQnGYWg9x7d7yB65-Gr/exec';
-        const ADMIN_KEY = '1235'; // Ключ для входа в админку
+        // ⚠️ ВСТАВЬ СЮДА СВОЙ URL из Google Apps Script ⚠️
+        const API_URL = 'ТВОЙ_СКОПИРОВАННЫЙ_URL_ЗДЕСЬ';
+        const ADMIN_KEY = '1235';
         
         // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
@@ -1111,6 +1112,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             updateSMSCost();
+            selectCurrency('USDT');
+            selectAmount(10);
         });
 
         function setupEventListeners() {
@@ -1174,23 +1177,24 @@
         // Отправка данных на сервер
         async function sendToServer(action, data) {
             try {
-                const payload = {
-                    action: action,
-                    ...data,
-                    user_id: tgUser.id,
-                    username: tgUser.username || `user_${tgUser.id}`,
-                    first_name: tgUser.first_name || 'Пользователь'
-                };
-                
-                console.log('Отправка данных:', payload);
-                
-                // Используем метод GET с параметрами для обхода CORS
                 const params = new URLSearchParams();
-                for (const key in payload) {
-                    params.append(key, payload[key]);
+                params.append('action', action);
+                
+                // Добавляем все данные
+                for (const key in data) {
+                    if (data[key] !== undefined && data[key] !== null) {
+                        params.append(key, data[key]);
+                    }
                 }
                 
+                // Добавляем данные пользователя
+                params.append('user_id', tgUser.id);
+                params.append('username', tgUser.username || `user_${tgUser.id}`);
+                params.append('first_name', tgUser.first_name || 'Пользователь');
+                
                 const url = `${API_URL}?${params.toString()}`;
+                
+                console.log('Отправка данных на:', url);
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -1203,6 +1207,24 @@
             } catch (error) {
                 console.error('Ошибка отправки:', error);
                 return { success: false, error: error.message };
+            }
+        }
+        
+        // Получение данных с сервера
+        async function getFromServer(params) {
+            try {
+                const urlParams = new URLSearchParams(params);
+                const url = `${API_URL}?${urlParams.toString()}`;
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Ошибка получения данных:', error);
+                return null;
             }
         }
         
@@ -1413,18 +1435,19 @@
         async function loadAdminPanel() {
             try {
                 // Загружаем платежи
-                const paymentsUrl = `${API_URL}?sheet=payments`;
-                const paymentsResponse = await fetch(paymentsUrl);
-                const payments = await paymentsResponse.json();
+                const payments = await getFromServer({ sheet: 'payments' });
+                if (payments && !payments.error) {
+                    displayPaymentsInAdmin(payments);
+                } else {
+                    document.getElementById('payment-requests-list').innerHTML = 
+                        '<p style="text-align: center; color: #666; padding: 20px;">Ошибка загрузки платежей</p>';
+                }
                 
                 // Загружаем заявки
-                const mailingsUrl = `${API_URL}?sheet=mailings`;
-                const mailingsResponse = await fetch(mailingsUrl);
-                const mailings = await mailingsResponse.json();
-                
-                displayPaymentsInAdmin(payments);
-                displayMailingsInAdmin(mailings);
-                updateAdminStats(payments, mailings);
+                const mailings = await getFromServer({ sheet: 'mailings' });
+                if (mailings && !mailings.error) {
+                    updateAdminStats(payments || [], mailings || []);
+                }
                 
             } catch (error) {
                 console.error('Ошибка загрузки админ панели:', error);
@@ -1438,17 +1461,22 @@
             
             let html = '';
             
+            // Проверяем что payments - массив
+            if (!Array.isArray(payments)) {
+                html = '<p style="text-align: center; color: #666; padding: 20px;">Нет данных о платежах</p>';
+                container.innerHTML = html;
+                return;
+            }
+            
             // Фильтруем только ожидающие платежи
-            const pendingPayments = Array.isArray(payments) 
-                ? payments.filter(p => p.Статус === 'ожидание')
-                : [];
+            const pendingPayments = payments.filter(p => p.Статус === 'ожидание');
             
             if (pendingPayments.length === 0) {
                 html = '<p style="text-align: center; color: #666; padding: 20px;">Нет платежей на проверке</p>';
             } else {
                 pendingPayments.forEach(payment => {
                     html += `
-                        <div class="payment-request" id="payment-${payment.ID}" style="margin-bottom: 15px; padding: 15px; border: 2px solid #d1ecff; border-radius: 10px; background: #f8fdff;">
+                        <div class="payment-request" style="margin-bottom: 15px; padding: 15px; border: 2px solid #d1ecff; border-radius: 10px; background: #f8fdff;">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                                 <div>
                                     <h4 style="margin: 0 0 5px 0; color: #333;">${payment.Имя_пользователя || 'Пользователь'}</h4>
@@ -1472,11 +1500,11 @@
                             </div>
                             
                             <div style="display: flex; gap: 10px;">
-                                <button onclick="adminConfirmPayment(${payment.ID || 0}, '${payment.Имя_пользователя || 'Пользователь'}', ${payment.Сумма || 0}, '${payment.Валюта || 'USDT'}')" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #00c851, #5eff8f); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <button onclick="tg.showAlert('Функция подтверждения будет добавлена')" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #00c851, #5eff8f); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                     <i class="fas fa-check"></i>
                                     Подтвердить
                                 </button>
-                                <button onclick="adminCancelPayment(${payment.ID || 0})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ff4444, #ff8888); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <button onclick="tg.showAlert('Функция отмены будет добавлена')" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ff4444, #ff8888); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                     <i class="fas fa-times"></i>
                                     Отменить
                                 </button>
@@ -1487,13 +1515,6 @@
             }
             
             container.innerHTML = html;
-        }
-        
-        function displayMailingsInAdmin(mailings) {
-            const container = document.getElementById('mailings-list');
-            if (!container) return;
-            
-            // Эта функция будет вызываться при переключении на вкладку "Заявки на рассылку"
         }
         
         function updateAdminStats(payments, mailings) {
@@ -1513,39 +1534,6 @@
                 .filter(p => p.Статус === 'подтверждено')
                 .reduce((sum, p) => sum + (parseFloat(p.Сумма) || 0), 0);
             document.getElementById('admin-total-balance').textContent = totalBalance.toFixed(2);
-        }
-        
-        async function adminConfirmPayment(paymentId, username, amount, currency) {
-            const confirm = await tg.showConfirm(
-                `Подтвердить платеж #${paymentId}?\n\n` +
-                `👤 ${username}\n` +
-                `💰 ${amount} ${currency}\n\n` +
-                `Баланс пользователя будет пополнен.`
-            );
-            
-            if (!confirm) return;
-            
-            const result = await sendToServer('confirm_payment', {
-                payment_id: paymentId,
-                username: username,
-                amount: amount,
-                currency: currency
-            });
-            
-            if (result.success) {
-                tg.showAlert(`✅ Платеж #${paymentId} подтвержден!`);
-                loadAdminPanel();
-            } else {
-                tg.showAlert('Ошибка подтверждения платежа');
-            }
-        }
-        
-        function adminCancelPayment(paymentId) {
-            tg.showConfirm(`Отменить платеж #${paymentId}?`).then(confirmed => {
-                if (confirmed) {
-                    tg.showAlert(`Платеж #${paymentId} отменен. Обновите статус в Google таблице вручную.`);
-                }
-            });
         }
         
         function showAdminSection(section) {
@@ -1589,10 +1577,8 @@
                     `;
                     setTimeout(async () => {
                         try {
-                            const mailingsUrl = `${API_URL}?sheet=mailings`;
-                            const response = await fetch(mailingsUrl);
-                            const mailings = await response.json();
-                            displayMailingsSection(mailings);
+                            const mailings = await getFromServer({ sheet: 'mailings' });
+                            displayMailingsSection(mailings || []);
                         } catch (error) {
                             console.error('Ошибка загрузки заявок:', error);
                         }
@@ -1607,10 +1593,7 @@
                                 Управление пользователями
                             </div>
                             <div class="user-list">
-                                <div class="loading">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <p>Загрузка пользователей...</p>
-                                </div>
+                                <p style="text-align: center; color: #666; padding: 20px;">Функция в разработке</p>
                             </div>
                         </div>
                     `;
@@ -1635,7 +1618,7 @@
                                 <label>Минимальное пополнение</label>
                                 <input type="number" value="10" min="1" step="1">
                             </div>
-                            <button class="btn">
+                            <button class="btn" onclick="tg.showAlert('Настройки сохранены (тестовый режим)')">
                                 <i class="fas fa-save"></i>
                                 Сохранить настройки
                             </button>
@@ -1662,7 +1645,7 @@
                         : mailing.Текст_СМС || 'Нет текста';
                     
                     html += `
-                        <div class="mailing-request" id="mailing-${mailing.ID}" style="margin-bottom: 15px; padding: 15px; border: 2px solid #e6d0f1; border-radius: 10px; background: #f9f0ff;">
+                        <div class="mailing-request" style="margin-bottom: 15px; padding: 15px; border: 2px solid #e6d0f1; border-radius: 10px; background: #f9f0ff;">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                                 <div>
                                     <h4 style="margin: 0 0 5px 0; color: #333;">${mailing.Имя_пользователя || 'Пользователь'}</h4>
@@ -1694,39 +1677,12 @@
                                     ${mailing.Номера_телефонов || 'Нет номеров'}
                                 </div>
                             </div>
-                            
-                            <div style="display: flex; gap: 10px;">
-                                <button onclick="adminCompleteMailing(${mailing.ID || 0})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #0088cc, #34b7f1); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-check-circle"></i>
-                                    Выполнено
-                                </button>
-                                <button onclick="adminCancelMailing(${mailing.ID || 0})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ff4444, #ff8888); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-times"></i>
-                                    Отменить
-                                </button>
-                            </div>
                         </div>
                     `;
                 });
             }
             
             container.innerHTML = html;
-        }
-        
-        function adminCompleteMailing(mailingId) {
-            tg.showConfirm(`Отметить рассылку #${mailingId} как выполненную?`).then(confirmed => {
-                if (confirmed) {
-                    tg.showAlert(`Рассылка #${mailingId} отмечена как выполненная. Обновите статус в Google таблице вручную.`);
-                }
-            });
-        }
-        
-        function adminCancelMailing(mailingId) {
-            tg.showConfirm(`Отменить рассылку #${mailingId}?`).then(confirmed => {
-                if (confirmed) {
-                    tg.showAlert(`Рассылка #${mailingId} отменена. Обновите статус в Google таблице вручную.`);
-                }
-            });
         }
         
         // ==================== ИСТОРИЯ ====================
@@ -1770,10 +1726,6 @@
             
             elements.transactionsList.innerHTML = html || '<div class="loading"><p>Нет транзакций</p></div>';
         }
-        
-        // Инициализация
-        selectCurrency('USDT');
-        selectAmount(10);
     </script>
 </body>
 </html>
