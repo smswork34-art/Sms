@@ -14,38 +14,43 @@
         }
 
         body {
-            background-color: #0f0f0f;
+            background-color: #1a1d21;
             color: #ffffff;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 100%;
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
             min-height: 100vh;
-            padding-bottom: 70px;
+            position: relative;
         }
 
         /* Header */
         .header {
-            padding: 15px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #1a1d21;
+            border-bottom: 1px solid #2a2d32;
             position: sticky;
             top: 0;
-            z-index: 100;
+            background-color: #1a1d21;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
         }
 
         .header-title {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
         }
 
         .close-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
             background-color: #2a2d32;
             border: none;
             color: #ffffff;
@@ -53,192 +58,390 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        /* Главный экран */
-        .main-screen {
-            text-align: center;
-            padding: 30px 20px;
+        .close-btn:active {
+            background-color: #3a3d42;
+            transform: scale(0.95);
         }
 
-        .logo {
-            font-size: 48px;
-            color: #0088cc;
-            margin-bottom: 10px;
-        }
-
-        .app-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: #ffffff;
-        }
-
-        .status {
-            display: inline-block;
-            background-color: #00cc66;
-            color: white;
-            padding: 5px 15px;
+        /* Баннер */
+        .banner {
+            background: linear-gradient(135deg, #0088cc 0%, #006699 100%);
+            margin: 20px;
             border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 30px;
+            padding: 30px 25px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 136, 204, 0.3);
         }
 
-        /* Кнопки действий */
-        .action-buttons {
-            padding: 0 20px;
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.4;
+            animation: float 25s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-40px, -40px) rotate(360deg); }
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .banner-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+
+        .banner-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 1.5px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #00cc66 0%, #00aa55 100%);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 20px rgba(0, 204, 102, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 6px 20px rgba(0, 204, 102, 0.4); }
+            50% { box-shadow: 0 6px 30px rgba(0, 204, 102, 0.6); }
+            100% { box-shadow: 0 6px 20px rgba(0, 204, 102, 0.4); }
+        }
+
+        /* Основные кнопки */
+        .main-actions {
+            margin: 30px 20px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-bottom: 40px;
+            gap: 16px;
         }
 
-        .action-btn {
-            background-color: #0088cc;
-            color: white;
-            border: none;
-            border-radius: 15px;
-            padding: 20px;
-            font-size: 18px;
-            font-weight: 600;
+        .main-btn {
+            background-color: #2a2d32;
+            border-radius: 18px;
+            padding: 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            text-decoration: none;
+            color: #ffffff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
             cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
+            position: relative;
+            overflow: hidden;
         }
 
-        .action-btn:active {
+        .main-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.7s;
+        }
+
+        .main-btn:active::before {
+            left: 100%;
+        }
+
+        .main-btn:active {
             transform: scale(0.98);
-            opacity: 0.9;
         }
 
-        .action-btn.deposit {
-            background-color: #34b7f1;
+        .btn-start {
+            background: linear-gradient(135deg, #0088cc 0%, #006699 100%);
+        }
+
+        .btn-deposit {
+            background: linear-gradient(135deg, #34b7f1 0%, #1a9cd8 100%);
         }
 
         .btn-content {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
         .btn-icon {
+            font-size: 32px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn-text {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .btn-arrow {
             font-size: 24px;
+            opacity: 0.8;
         }
 
         /* Быстрые действия */
         .quick-actions {
-            padding: 0 20px;
-            margin-bottom: 40px;
+            margin: 35px 20px;
         }
 
         .section-title {
-            font-size: 16px;
-            color: #888;
-            margin-bottom: 15px;
-            padding-left: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #bbbbbb;
+            padding-left: 8px;
         }
 
-        .quick-buttons {
+        .actions-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 16px;
         }
 
-        .quick-btn {
+        .action-btn {
             background-color: #2a2d32;
-            border: none;
-            border-radius: 12px;
-            padding: 15px 10px;
+            border-radius: 16px;
+            padding: 24px 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            color: white;
+            justify-content: center;
+            gap: 14px;
+            text-decoration: none;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            border: none;
             cursor: pointer;
-            transition: background-color 0.2s;
         }
 
-        .quick-btn:active {
+        .action-btn:active {
             background-color: #3a3d42;
+            transform: translateY(-2px);
         }
 
-        .quick-icon {
-            font-size: 20px;
-            color: #34b7f1;
+        .action-icon {
+            font-size: 28px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #5dbea3 0%, #4aa88d 100%);
+            color: white;
         }
 
-        .quick-text {
-            font-size: 13px;
-            font-weight: 500;
+        .action-text {
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
         }
 
-        /* Тарифы */
-        .pricing {
+        /* Цены */
+        .pricing-section {
             background-color: #2a2d32;
-            margin: 0 20px;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
+            border-radius: 20px;
+            padding: 25px;
+            margin: 35px 20px;
+            border: 1px solid #3a3d42;
         }
 
         .pricing-title {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
             color: #34b7f1;
-            margin-bottom: 15px;
             text-align: center;
         }
 
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 16px;
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
         }
 
-        .price-value {
-            color: #ffffff;
-            font-weight: 600;
+        .price-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 22px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .price-card:active {
+            transform: scale(0.97);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .price-amount {
+            font-size: 22px;
+            font-weight: 800;
+            color: #34b7f1;
+            margin-bottom: 8px;
+        }
+
+        .price-label {
+            font-size: 15px;
+            color: #bbbbbb;
         }
 
         .min-balance {
-            text-align: center;
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
             border-top: 1px solid #3a3d42;
-            color: #888;
-            font-size: 14px;
+            text-align: center;
+            font-size: 16px;
+            color: #bbbbbb;
         }
 
         .min-balance span {
             color: #34b7f1;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         /* Footer */
         .footer {
             text-align: center;
-            padding: 20px;
-            color: #666;
-            font-size: 13px;
+            padding: 30px 20px;
+            color: #888888;
+            font-size: 14px;
+            border-top: 1px solid #2a2d32;
+            margin-top: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .footer-link {
+            color: #34b7f1;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .footer-link:active {
+            color: #5dbea3;
         }
 
         /* Анимация закрытия */
-        .closing {
-            animation: fadeOut 0.3s forwards !important;
+        .page-closing {
+            animation: slideOut 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
         }
 
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
+        @keyframes slideOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+        }
+
+        /* Загрузка */
+        .loading {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 500px) {
+            .app-container {
+                max-width: 100%;
+            }
+            
+            .banner {
+                margin: 16px;
+                padding: 25px 20px;
+            }
+            
+            .banner-title {
+                font-size: 28px;
+            }
+            
+            .main-actions {
+                margin: 25px 16px;
+                gap: 14px;
+            }
+            
+            .main-btn {
+                padding: 22px 20px;
+            }
+            
+            .btn-text {
+                font-size: 18px;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            
+            .action-btn {
+                flex-direction: row;
+                justify-content: flex-start;
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .action-text {
+                font-size: 16px;
+            }
+            
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container" id="appContainer">
+    <div class="app-container" id="appContainer">
         <!-- Header -->
         <div class="header">
             <div class="header-title">SMS MAILING</div>
@@ -247,157 +450,243 @@
             </button>
         </div>
 
-        <!-- Главный экран -->
-        <div class="main-screen">
-            <div class="logo">
-                <i class="fas fa-sms"></i>
+        <!-- Баннер -->
+        <div class="banner loading" id="banner">
+            <div class="banner-content">
+                <div class="banner-icon">
+                    <i class="fas fa-sms"></i>
+                </div>
+                <div class="banner-title">SMS MAILING</div>
+                <div class="status-badge">РАБОТАЕМ</div>
             </div>
-            <div class="app-title">SMS MAILING</div>
-            <div class="status">РАБОТАЕМ</div>
         </div>
 
-        <!-- Основные кнопки -->
-        <div class="action-buttons">
-            <button class="action-btn" id="startMailingBtn">
+        <!-- Основные действия -->
+        <div class="main-actions">
+            <button class="main-btn btn-start loading" id="startMailingBtn">
                 <div class="btn-content">
-                    <i class="fas fa-paper-plane btn-icon"></i>
-                    <span>Запустить рассылку</span>
+                    <div class="btn-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div class="btn-text">Запустить рассылку</div>
                 </div>
-                <i class="fas fa-chevron-right"></i>
+                <div class="btn-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
             </button>
             
-            <button class="action-btn deposit" id="depositBtn">
+            <button class="main-btn btn-deposit loading" id="depositBtn">
                 <div class="btn-content">
-                    <i class="fas fa-plus-circle btn-icon"></i>
-                    <span>Пополнить баланс</span>
+                    <div class="btn-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <div class="btn-text">Пополнить баланс</div>
                 </div>
-                <i class="fas fa-chevron-right"></i>
+                <div class="btn-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
             </button>
         </div>
 
         <!-- Быстрые действия -->
         <div class="quick-actions">
             <div class="section-title">Быстрые действия</div>
-            <div class="quick-buttons">
-                <button class="quick-btn" id="balanceBtn">
-                    <i class="fas fa-wallet quick-icon"></i>
-                    <span class="quick-text">Баланс</span>
+            <div class="actions-grid">
+                <button class="action-btn loading" id="balanceBtn">
+                    <div class="action-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="action-text">Баланс</div>
                 </button>
                 
-                <a href="https://t.me/SmsRuBoss" class="quick-btn" target="_blank">
-                    <i class="fas fa-headset quick-icon"></i>
-                    <span class="quick-text">Поддержка</span>
+                <a href="https://t.me/SmsRuBoss" class="action-btn loading" target="_blank">
+                    <div class="action-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="action-text">Поддержка</div>
                 </a>
                 
-                <a href="https://t.me/NewsRuSms" class="quick-btn" target="_blank">
-                    <i class="fas fa-newspaper quick-icon"></i>
-                    <span class="quick-text">Новости</span>
+                <a href="https://t.me/NewsRuSms" class="action-btn loading" target="_blank">
+                    <div class="action-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="action-text">Новости</div>
                 </a>
             </div>
         </div>
 
-        <!-- Тарифы -->
-        <div class="pricing">
+        <!-- Цены -->
+        <div class="pricing-section loading">
             <div class="pricing-title">Цены за SMS</div>
-            <div class="price-row">
-                <span>1 CMC =</span>
-                <span class="price-value">1 USDT</span>
-            </div>
-            <div class="price-row">
-                <span>1 CMC =</span>
-                <span class="price-value">0.65 TON</span>
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <div class="price-amount">1 CMC = 1 $</div>
+                    <div class="price-label">в USDT</div>
+                </div>
+                <div class="price-card">
+                    <div class="price-amount">1 CMC = 0.65 TON</div>
+                    <div class="price-label">в Toncoin</div>
+                </div>
             </div>
             <div class="min-balance">
-                Минимальный баланс: <span>10 USDT</span>
+                Минимальный баланс для рассылки: <span>10 USDT</span>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="footer">
-            <div>© SMS Mailing 2023</div>
-            <div style="margin-top: 5px; font-size: 12px; color: #888;">
-                <i class="fas fa-robot"></i> @SMSMailingRu_Bot
+        <div class="footer loading">
+            <p>SMS Mailing Bot &copy; 2023</p>
+            <div class="footer-links">
+                <a href="https://t.me/SMSMailingRu_Bot" class="footer-link" target="_blank">Основной бот</a>
+                <a href="https://t.me/SmsRuBoss" class="footer-link" target="_blank">Техподдержка</a>
+                <a href="https://t.me/NewsRuSms" class="footer-link" target="_blank">Новости</div>
             </div>
         </div>
     </div>
 
     <script>
-        // Имитация Telegram WebApp API
+        // Telegram WebApp эмуляция
         const TelegramWebApp = {
-            close: function() {
-                // В реальном Telegram будет закрыто мини-приложение
-                document.getElementById('appContainer').classList.add('closing');
-                setTimeout(() => {
-                    document.body.innerHTML = '<div style="display:none;"></div>';
-                    console.log('Мини-приложение закрыто');
-                }, 300);
-            },
-            openLink: function(url) {
-                window.open(url, '_blank');
+            isTelegram: window.Telegram && window.Telegram.WebApp,
+            
+            init() {
+                if (this.isTelegram) {
+                    return window.Telegram.WebApp;
+                }
+                
+                // Эмуляция для браузера
+                return {
+                    ready() {
+                        console.log('Telegram WebApp ready');
+                    },
+                    expand() {
+                        console.log('Telegram WebApp expanded');
+                    },
+                    close() {
+                        console.log('Telegram WebApp closing...');
+                        // Анимация закрытия
+                        document.getElementById('appContainer').classList.add('page-closing');
+                        setTimeout(() => {
+                            document.body.innerHTML = `
+                                <div style="
+                                    position: fixed;
+                                    top: 0;
+                                    left: 0;
+                                    right: 0;
+                                    bottom: 0;
+                                    background: #1a1d21;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    color: white;
+                                    font-size: 14px;
+                                ">
+                                    Мини-приложение закрыто. Открывается Telegram бот...
+                                </div>
+                            `;
+                            setTimeout(() => {
+                                document.body.style.display = 'none';
+                            }, 1000);
+                        }, 350);
+                    },
+                    openLink(url, options = {}) {
+                        console.log('Opening link:', url);
+                        // Открываем ссылку в новом окне
+                        window.open(url, '_blank');
+                    }
+                };
             }
         };
 
+        // Инициализация WebApp
+        const webApp = TelegramWebApp.init();
+        
         // Функция для открытия бота с deep link
-        function openBotWithDeepLink(action) {
+        function openBotWithAction(action) {
             // Закрываем мини-приложение
-            TelegramWebApp.close();
+            webApp.close();
             
-            // Формируем ссылку на бота с параметром start
-            let botUrl = '';
+            // Формируем правильную ссылку
+            let botUrl = 'https://t.me/SMSMailingRu_Bot';
             
+            // Правильные параметры для бота
             switch(action) {
-                case 'mailing':
-                    botUrl = 'https://t.me/SMSMailingRu_Bot?start=mailing';
+                case 'start_mailing':
+                    botUrl += '?start=start_mailing';
                     break;
                 case 'deposit':
-                    botUrl = 'https://t.me/SMSMailingRu_Bot?start=deposit';
+                    botUrl += '?start=deposit';
                     break;
-                case 'balance':
-                    botUrl = 'https://t.me/SMSMailingRu_Bot?start=balance';
+                case 'profile':
+                    botUrl += '?start=profile';
                     break;
                 default:
-                    botUrl = 'https://t.me/SMSMailingRu_Bot';
+                    botUrl += '?start=start';
             }
             
-            // Открываем бота через 300мс (после анимации закрытия)
+            // Открываем бота через задержку (после анимации закрытия)
             setTimeout(() => {
-                TelegramWebApp.openLink(botUrl);
-            }, 300);
+                webApp.openLink(botUrl);
+            }, 400);
         }
 
-        // Обработчики кнопок
+        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', () => {
-            // Запустить рассылку
+            // Инициализация WebApp
+            webApp.ready();
+            webApp.expand();
+            
+            // Показываем элементы с анимацией
+            setTimeout(() => {
+                const loadingElements = document.querySelectorAll('.loading');
+                loadingElements.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('loaded');
+                    }, index * 100);
+                });
+            }, 200);
+            
+            // Обработчики кнопок
             document.getElementById('startMailingBtn').addEventListener('click', () => {
-                openBotWithDeepLink('mailing');
+                openBotWithAction('start_mailing');
             });
             
-            // Пополнить баланс
             document.getElementById('depositBtn').addEventListener('click', () => {
-                openBotWithDeepLink('deposit');
+                openBotWithAction('deposit');
             });
             
-            // Баланс
             document.getElementById('balanceBtn').addEventListener('click', () => {
-                openBotWithDeepLink('balance');
+                openBotWithAction('profile');
             });
             
-            // Закрыть приложение
             document.getElementById('closeBtn').addEventListener('click', () => {
-                TelegramWebApp.close();
+                webApp.close();
             });
             
-            // Добавляем эффект нажатия на кнопки
-            const buttons = document.querySelectorAll('.action-btn, .quick-btn');
+            // Обработка нажатий для анимаций
+            const buttons = document.querySelectorAll('.main-btn, .action-btn, .price-card');
             buttons.forEach(btn => {
                 btn.addEventListener('touchstart', function() {
-                    this.style.opacity = '0.8';
+                    this.style.transform = 'scale(0.97)';
                 });
                 
                 btn.addEventListener('touchend', function() {
-                    this.style.opacity = '1';
+                    this.style.transform = '';
+                });
+                
+                btn.addEventListener('touchcancel', function() {
+                    this.style.transform = '';
                 });
             });
+            
+            // Пустьсующий статус
+            const statusBadge = document.querySelector('.status-badge');
+            setInterval(() => {
+                statusBadge.style.animation = 'none';
+                setTimeout(() => {
+                    statusBadge.style.animation = 'pulse 2s infinite';
+                }, 10);
+            }, 5000);
         });
     </script>
 </body>
