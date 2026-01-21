@@ -18,13 +18,6 @@
             color: #e3e3e3;
             line-height: 1.6;
             min-height: 100vh;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* Светлая тема */
-        body.light-theme {
-            background-color: #ffffff;
-            color: #333333;
         }
 
         .container {
@@ -44,11 +37,6 @@
             position: sticky;
             top: 0;
             z-index: 100;
-        }
-
-        .light-theme .header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #e6e6e6;
         }
 
         .header-left {
@@ -75,55 +63,65 @@
             cursor: pointer;
         }
 
-        .light-theme .close-btn {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-
-        /* Карточка баланса */
-        .balance-card {
+        /* Баннер с логотипом */
+        .banner {
             background: linear-gradient(135deg, #0088cc 0%, #006699 100%);
             margin: 16px;
             border-radius: 16px;
-            padding: 24px;
+            padding: 20px;
             color: white;
             box-shadow: 0 4px 20px rgba(0, 136, 204, 0.3);
-        }
-
-        .balance-title {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 8px;
-        }
-
-        .balance-amount {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .balance-subtitle {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-
-        /* Быстрые действия */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin: 20px 16px;
-        }
-
-        .action-btn {
-            background-color: #2a2d32;
-            border-radius: 12px;
-            padding: 16px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .banner-icon {
+            font-size: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+        }
+
+        .banner-content {
+            flex: 1;
+        }
+
+        .banner-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .banner-status {
+            display: inline-block;
+            background: #00cc66;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Основные кнопки */
+        .main-actions {
+            margin: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .main-btn {
+            background-color: #2a2d32;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             text-decoration: none;
             color: #e3e3e3;
             transition: transform 0.2s, background-color 0.2s;
@@ -131,335 +129,173 @@
             cursor: pointer;
         }
 
-        .light-theme .action-btn {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-
-        .action-btn:hover, .action-btn:active {
+        .main-btn:hover {
             transform: translateY(-2px);
             background-color: #3a3d42;
         }
 
-        .light-theme .action-btn:hover, .light-theme .action-btn:active {
-            background-color: #e6e6e6;
+        .btn-primary {
+            background: linear-gradient(135deg, #0088cc 0%, #006699 100%);
         }
 
-        .action-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0077b3 0%, #005580 100%);
         }
 
-        .action-text {
-            font-size: 14px;
-            font-weight: 500;
+        .btn-secondary {
+            background: linear-gradient(135deg, #34b7f1 0%, #1a9cd8 100%);
         }
 
-        /* Разделитель */
-        .divider {
-            margin: 24px 16px;
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #2aa8e0 0%, #1589c4 100%);
+        }
+
+        .btn-content {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
         }
 
-        .divider-line {
-            flex-grow: 1;
-            height: 1px;
-            background-color: #2a2d32;
-        }
-
-        .light-theme .divider-line {
-            background-color: #e6e6e6;
-        }
-
-        .divider-text {
-            font-size: 14px;
-            color: #888;
-            font-weight: 500;
-        }
-
-        /* Секции */
-        .section {
-            margin: 0 16px 24px;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .see-all {
-            color: #0088cc;
-            font-size: 14px;
-            text-decoration: none;
-        }
-
-        /* Список валют */
-        .currency-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .currency-item {
-            background-color: #2a2d32;
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background-color 0.2s;
-        }
-
-        .light-theme .currency-item {
-            background-color: #f2f2f2;
-        }
-
-        .currency-item:hover {
-            background-color: #3a3d42;
-        }
-
-        .light-theme .currency-item:hover {
-            background-color: #e6e6e6;
-        }
-
-        .currency-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .currency-icon {
-            width: 40px;
-            height: 40px;
+        .btn-icon {
+            font-size: 28px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .btn-text {
             font-size: 18px;
             font-weight: 600;
         }
 
-        .usdt-icon {
-            background-color: #26a17b;
-            color: white;
+        .btn-arrow {
+            font-size: 20px;
+            opacity: 0.7;
         }
 
-        .ton-icon {
-            background-color: #0088cc;
-            color: white;
+        /* Быстрые ссылки */
+        .quick-links {
+            margin: 30px 16px;
         }
 
-        .currency-name {
+        .links-title {
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .currency-rate {
-            font-size: 14px;
+            margin-bottom: 16px;
             color: #888;
         }
 
-        .currency-amount {
-            text-align: right;
-        }
-
-        .currency-value {
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .currency-usd {
-            font-size: 14px;
-            color: #888;
-        }
-
-        /* Кнопки навигации */
-        .nav-buttons {
+        .links-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            margin: 20px 16px;
         }
 
-        .nav-btn {
+        .link-btn {
             background-color: #2a2d32;
             border-radius: 12px;
-            padding: 14px 12px;
+            padding: 16px 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             text-decoration: none;
             color: #e3e3e3;
             transition: background-color 0.2s;
         }
 
-        .light-theme .nav-btn {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-
-        .nav-btn:hover {
+        .link-btn:hover {
             background-color: #3a3d42;
         }
 
-        .light-theme .nav-btn:hover {
-            background-color: #e6e6e6;
+        .link-icon {
+            font-size: 22px;
         }
 
-        .nav-icon {
-            font-size: 20px;
-        }
-
-        .nav-text {
-            font-size: 12px;
+        .link-text {
+            font-size: 13px;
             font-weight: 500;
+            text-align: center;
         }
 
-        /* Секция с информацией */
-        .info-section {
+        /* Информация о тарифах */
+        .rates-info {
             background-color: #2a2d32;
             border-radius: 16px;
             padding: 20px;
             margin: 20px 16px;
         }
 
-        .light-theme .info-section {
-            background-color: #f2f2f2;
-        }
-
-        .info-title {
+        .rates-title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 12px;
-            color: #0088cc;
+            margin-bottom: 15px;
+            color: #34b7f1;
         }
 
-        .info-text {
-            font-size: 15px;
-            line-height: 1.5;
-            margin-bottom: 16px;
-            color: #bbb;
+        .rates-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
         }
 
-        .light-theme .info-text {
-            color: #666;
+        .rate-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
         }
 
-        /* Футер с кнопками */
-        .footer-buttons {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #1a1d21;
-            border-top: 1px solid #2a2d32;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            z-index: 100;
-        }
-
-        .light-theme .footer-buttons {
-            background-color: #ffffff;
-            border-top: 1px solid #e6e6e6;
-        }
-
-        .footer-btn {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            text-decoration: none;
-            color: #888;
-            padding: 8px;
-            border-radius: 8px;
-            transition: color 0.2s, background-color 0.2s;
-        }
-
-        .footer-btn.active {
-            color: #0088cc;
-        }
-
-        .footer-btn:hover {
-            background-color: #2a2d32;
-        }
-
-        .light-theme .footer-btn:hover {
-            background-color: #f2f2f2;
-        }
-
-        .footer-icon {
+        .rate-value {
             font-size: 20px;
+            font-weight: 700;
+            color: #34b7f1;
+            margin-bottom: 5px;
         }
 
-        .footer-text {
-            font-size: 12px;
+        .rate-label {
+            font-size: 14px;
+            color: #aaa;
         }
 
-        /* Переключатель темы */
-        .theme-toggle {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            z-index: 101;
-        }
-
-        .theme-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #2a2d32;
-            color: #e3e3e3;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        .light-theme .theme-btn {
-            background-color: #f2f2f2;
-            color: #333;
+        /* Футер */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 16px;
+            color: #888;
+            font-size: 13px;
+            border-top: 1px solid #2a2d32;
         }
 
         /* Адаптивность */
         @media (max-width: 500px) {
             .container {
-                padding-bottom: 100px;
+                padding-bottom: 20px;
             }
             
-            .balance-amount {
-                font-size: 32px;
+            .banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
             }
             
-            .quick-actions {
+            .links-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .rates-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
-<body class="dark-theme">
-    <!-- Переключатель темы -->
-    <div class="theme-toggle">
-        <button class="theme-btn" id="themeToggle">
-            <i class="fas fa-moon"></i>
-        </button>
-    </div>
-
+<body>
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -471,178 +307,170 @@
             </div>
         </div>
 
-        <!-- Карточка баланса -->
-        <div class="balance-card">
-            <div class="balance-title">Общий баланс в USD</div>
-            <div class="balance-amount">$ 25.50</div>
-            <div class="balance-subtitle">Для запуска рассылки требуется минимум 10 USDT</div>
+        <!-- Баннер -->
+        <div class="banner">
+            <div class="banner-icon">
+                <i class="fas fa-sms"></i>
+            </div>
+            <div class="banner-content">
+                <div class="banner-title">SMS MAILING</div>
+                <div class="banner-status">РАБОТАЕМ</div>
+            </div>
         </div>
 
-        <!-- Быстрые действия -->
-        <div class="quick-actions">
-            <a href="https://t.me/SMSMailingRu_Bot" class="action-btn" target="_blank">
-                <div class="action-icon"><i class="fas fa-paper-plane"></i></div>
-                <div class="action-text">Запустить рассылку</div>
-            </a>
-            
-            <a href="#" class="action-btn" id="depositBtn">
-                <div class="action-icon"><i class="fas fa-plus-circle"></i></div>
-                <div class="action-text">Пополнить баланс</div>
-            </a>
-        </div>
-
-        <!-- Навигационные кнопки -->
-        <div class="nav-buttons">
-            <a href="#" class="nav-btn">
-                <div class="nav-icon"><i class="fas fa-wallet"></i></div>
-                <div class="nav-text">Баланс</div>
-            </a>
-            
-            <a href="https://t.me/SmsRuBoss" class="nav-btn" target="_blank">
-                <div class="nav-icon"><i class="fas fa-headset"></i></div>
-                <div class="nav-text">Поддержка</div>
-            </a>
-            
-            <a href="https://t.me/NewsRuSms" class="nav-btn" target="_blank">
-                <div class="nav-icon"><i class="fas fa-newspaper"></i></div>
-                <div class="nav-text">Новости</div>
-            </a>
-        </div>
-
-        <!-- Разделитель -->
-        <div class="divider">
-            <div class="divider-line"></div>
-            <div class="divider-text">Мои активы</div>
-            <div class="divider-line"></div>
-        </div>
-
-        <!-- Список валют -->
-        <div class="currency-list">
-            <div class="currency-item">
-                <div class="currency-info">
-                    <div class="currency-icon usdt-icon">$</div>
-                    <div>
-                        <div class="currency-name">Tether</div>
-                        <div class="currency-rate">$0.998 -0.05%</div>
+        <!-- Основные действия -->
+        <div class="main-actions">
+            <a href="https://t.me/SMSMailingRu_Bot?start=sms" class="main-btn btn-primary" id="startMailingBtn" target="_blank">
+                <div class="btn-content">
+                    <div class="btn-icon">
+                        <i class="fas fa-paper-plane"></i>
                     </div>
+                    <div class="btn-text">Запустить рассылку</div>
                 </div>
-                <div class="currency-amount">
-                    <div class="currency-value">10.0 USDT</div>
-                    <div class="currency-usd">$9.98</div>
+                <div class="btn-arrow">
+                    <i class="fas fa-chevron-right"></i>
                 </div>
-            </div>
+            </a>
             
-            <div class="currency-item">
-                <div class="currency-info">
-                    <div class="currency-icon ton-icon">T</div>
-                    <div>
-                        <div class="currency-name">Toncoin</div>
-                        <div class="currency-rate">$1.55 -1.31%</div>
+            <a href="https://t.me/SMSMailingRu_Bot?start=bal" class="main-btn btn-secondary" id="depositBtn" target="_blank">
+                <div class="btn-content">
+                    <div class="btn-icon">
+                        <i class="fas fa-plus-circle"></i>
                     </div>
+                    <div class="btn-text">Пополнить баланс</div>
                 </div>
-                <div class="currency-amount">
-                    <div class="currency-value">15.20 TON</div>
-                    <div class="currency-usd">$23.56</div>
+                <div class="btn-arrow">
+                    <i class="fas fa-chevron-right"></i>
                 </div>
-            </div>
+            </a>
         </div>
 
-        <!-- Информационная секция -->
-        <div class="info-section">
-            <div class="info-title">О сервисе SMS Mailing</div>
-            <div class="info-text">
-                Отправляйте СМС рассылки быстро и удобно. Идеально для бизнеса и уведомлений. 
-                Сервис специализируется на отправке SMS на российские номера для украинских колл-центров и обычных граждан.
-            </div>
-            
-            <div class="info-title" style="margin-top: 20px;">Тарифы</div>
-            <div class="info-text">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span>1 CMC = 1 USDT</span>
-                    <span>1 CMC = 1.63 TON</span>
-                </div>
-                <div style="font-size: 13px; color: #999;">
-                    *CMC (Cost per Message) - стоимость одного отправленного сообщения
-                </div>
-            </div>
-        </div>
-
-        <!-- Секция с быстрыми ссылками -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">Быстрые ссылки</div>
-                <a href="#" class="see-all">Все</a>
-            </div>
-            
-            <div class="quick-actions">
-                <a href="https://t.me/SMSMailingRu_Bot" class="action-btn" target="_blank" style="background-color: #0088cc; color: white;">
-                    <div class="action-icon"><i class="fas fa-robot"></i></div>
-                    <div class="action-text">Бот рассылки</div>
+        <!-- Быстрые ссылки -->
+        <div class="quick-links">
+            <div class="links-title">Быстрые действия</div>
+            <div class="links-grid">
+                <a href="https://t.me/SMSMailingRu_Bot?start=profile" class="link-btn" target="_blank">
+                    <div class="link-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="link-text">Баланс</div>
                 </a>
                 
-                <a href="https://t.me/SmsRuBoss" class="action-btn" target="_blank" style="background-color: #5dbea3; color: white;">
-                    <div class="action-icon"><i class="fas fa-comments"></i></div>
-                    <div class="action-text">Поддержка</div>
+                <a href="https://t.me/SmsRuBoss" class="link-btn" target="_blank">
+                    <div class="link-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="link-text">Поддержка</div>
+                </a>
+                
+                <a href="https://t.me/NewsRuSms" class="link-btn" target="_blank">
+                    <div class="link-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="link-text">Новости</div>
                 </a>
             </div>
         </div>
-    </div>
 
-    <!-- Футер с навигацией -->
-    <div class="footer-buttons">
-        <a href="#" class="footer-btn active">
-            <div class="footer-icon"><i class="fas fa-home"></i></div>
-            <div class="footer-text">Главная</div>
-        </a>
-        
-        <a href="#" class="footer-btn">
-            <div class="footer-icon"><i class="fas fa-chart-bar"></i></div>
-            <div class="footer-text">Статистика</div>
-        </a>
-        
-        <a href="#" class="footer-btn">
-            <div class="footer-icon"><i class="fas fa-cog"></i></div>
-            <div class="footer-text">Настройки</div>
-        </a>
-        
-        <a href="#" class="footer-btn">
-            <div class="footer-icon"><i class="fas fa-history"></i></div>
-            <div class="footer-text">История</div>
-        </a>
+        <!-- Тарифы -->
+        <div class="rates-info">
+            <div class="rates-title">Тарифы на рассылку</div>
+            <div class="rates-grid">
+                <div class="rate-item">
+                    <div class="rate-value">1 CMC = 1 USDT</div>
+                    <div class="rate-label">В USDT</div>
+                </div>
+                <div class="rate-item">
+                    <div class="rate-value">1 CMC = 1.63 TON</div>
+                    <div class="rate-label">В TON</div>
+                </div>
+            </div>
+            <div style="margin-top: 15px; font-size: 14px; color: #aaa; text-align: center;">
+                Минимальная сумма для рассылки: <span style="color: #34b7f1; font-weight: 600;">10 USDT</span>
+            </div>
+        </div>
+
+        <!-- Информация -->
+        <div class="rates-info">
+            <div class="rates-title">О сервисе</div>
+            <div style="font-size: 15px; line-height: 1.6; color: #bbb;">
+                <p>Профессиональная рассылка SMS на российские номера для украинских колл-центров и обычных граждан.</p>
+                <p style="margin-top: 10px;">Быстрая настройка за 5-15 минут, гарантированная доставка сообщений.</p>
+            </div>
+        </div>
+
+        <!-- Футер -->
+        <div class="footer">
+            <p>SMS Mailing Bot &copy; 2023</p>
+            <p style="margin-top: 8px; font-size: 12px;">
+                <i class="fas fa-robot"></i> Основной бот: @SMSMailingRu_Bot
+            </p>
+        </div>
     </div>
 
     <script>
-        // Переключение темы
-        const themeToggle = document.getElementById('themeToggle');
-        const body = document.body;
-        
-        themeToggle.addEventListener('click', () => {
-            if (body.classList.contains('light-theme')) {
-                body.classList.remove('light-theme');
-                body.classList.add('dark-theme');
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-            } else {
-                body.classList.remove('dark-theme');
-                body.classList.add('light-theme');
-                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            }
-        });
-        
-        // Имитация закрытия мини-приложения
-        document.getElementById('closeBtn').addEventListener('click', () => {
-            alert('Мини-приложение будет закрыто. В реальном Telegram мини-приложении это закроет окно приложения.');
-        });
-        
-        // Обработка кнопки пополнения
-        document.getElementById('depositBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Переход к пополнению баланса. В реальном приложении здесь будет форма пополнения.');
-        });
-        
-        // Анимация при загрузке
+        // Функция для открытия бота с командой и закрытия мини-приложения
+        function openBotWithCommand(botUrl) {
+            // Открываем бота в новом окне (Telegram откроет приложение)
+            window.open(botUrl, '_blank');
+            
+            // Имитируем закрытие мини-приложения (в реальном Telegram мини-приложении)
+            // это скроет приложение в многозадачку
+            setTimeout(() => {
+                // В реальном мини-приложении Telegram здесь должен быть вызов Telegram API
+                // Telegram.WebApp.close();
+                
+                // Для демонстрации покажем сообщение
+                document.body.style.opacity = '0.5';
+                document.body.style.transition = 'opacity 0.3s';
+                
+                setTimeout(() => {
+                    alert('Мини-приложение будет скрыто. Бот открывается в полноэкранном режиме.');
+                }, 100);
+            }, 300);
+            
+            return false;
+        }
+
+        // Обработка кнопок
         document.addEventListener('DOMContentLoaded', () => {
-            // Плавное появление элементов
-            const elements = document.querySelectorAll('.balance-card, .quick-actions, .nav-buttons, .currency-item, .info-section');
+            // Кнопка запуска рассылки
+            document.getElementById('startMailingBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                openBotWithCommand('https://t.me/SMSMailingRu_Bot?start=sms');
+            });
+            
+            // Кнопка пополнения баланса
+            document.getElementById('depositBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                openBotWithCommand('https://t.me/SMSMailingRu_Bot?start=bal');
+            });
+            
+            // Кнопки быстрых действий
+            const linkBtns = document.querySelectorAll('.link-btn');
+            linkBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href.includes('SMSMailingRu_Bot')) {
+                        e.preventDefault();
+                        openBotWithCommand(href);
+                    }
+                    // Для других ссылок (поддержка, новости) оставляем стандартное поведение
+                });
+            });
+            
+            // Кнопка закрытия
+            document.getElementById('closeBtn').addEventListener('click', () => {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.3s';
+                
+                setTimeout(() => {
+                    alert('Мини-приложение закрыто.');
+                }, 300);
+            });
+            
+            // Анимация при загрузке
+            const elements = document.querySelectorAll('.banner, .main-btn, .links-grid, .rates-info');
             
             elements.forEach((el, index) => {
                 el.style.opacity = '0';
@@ -655,31 +483,29 @@
                 }, 100 * index);
             });
             
-            // Интерактивность для карточек валют
-            const currencyItems = document.querySelectorAll('.currency-item');
-            currencyItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    alert('Выбрана валюта для просмотра деталей');
+            // Добавляем эффект наведения для всех кнопок
+            const allButtons = document.querySelectorAll('.main-btn, .link-btn');
+            allButtons.forEach(btn => {
+                btn.addEventListener('mousedown', function() {
+                    this.style.transform = 'scale(0.98)';
+                });
+                
+                btn.addEventListener('mouseup', function() {
+                    this.style.transform = '';
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
                 });
             });
         });
         
-        // Обработка навигационных кнопок в футере
-        const footerBtns = document.querySelectorAll('.footer-btn');
-        footerBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Убираем активный класс у всех кнопок
-                footerBtns.forEach(b => b.classList.remove('active'));
-                
-                // Добавляем активный класс текущей кнопке
-                this.classList.add('active');
-                
-                // В реальном приложении здесь будет переход между разделами
-                const text = this.querySelector('.footer-text').textContent;
-                alert(`Переход в раздел: ${text}`);
-            });
+        // Обработка видимости страницы (имитация поведения в Telegram)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Страница скрыта (мини-приложение свёрнуто)
+                console.log('Мини-приложение скрыто в многозадачку');
+            }
         });
     </script>
 </body>
