@@ -3,692 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS Mailing - Мини-приложение</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>SMS Mailing - Рассылка SMS на российские номера</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #0088cc 0%, #34b7f1 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background-color: #f3f6f9;
             color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding-bottom: 80px;
+            padding: 20px;
         }
 
-        .app-header {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 136, 204, 0.2);
+        /* Header в стиле Telegram */
+        .header {
+            background: linear-gradient(135deg, #0088cc 0%, #006699 100%);
+            color: white;
+            padding: 25px 20px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.2);
             text-align: center;
+            margin-bottom: 30px;
         }
 
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #0088cc, #34b7f1);
-            border-radius: 20px;
-            margin: 0 auto 20px;
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
-            color: white;
+            gap: 12px;
         }
 
-        h1 {
-            color: #0088cc;
-            font-size: 28px;
-            margin-bottom: 10px;
+        .header h1 i {
+            font-size: 32px;
         }
 
-        .subtitle {
-            color: #666;
+        .header p {
             font-size: 16px;
-            line-height: 1.5;
-            margin-bottom: 15px;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
         }
 
-        .prices {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 15px;
-        }
-
-        .price-badge {
-            background: #f0f9ff;
-            padding: 8px 15px;
-            border-radius: 10px;
-            color: #0088cc;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
+        /* Карточки */
         .card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 5px 15px rgba(0, 136, 204, 0.1);
-            transition: transform 0.3s ease;
+            background-color: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e6e9ec;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
         }
 
-        .card-title {
+        .card h2 {
             color: #0088cc;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 22px;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .card-title i {
-            font-size: 20px;
+        .card h2 i {
+            font-size: 24px;
+        }
+
+        /* Кнопки */
+        .buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
         }
 
         .btn {
-            background: linear-gradient(135deg, #0088cc, #34b7f1);
-            color: white;
-            border: none;
-            padding: 16px 25px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            margin: 10px 0;
+            justify-content: flex-start;
+            gap: 15px;
+            padding: 18px 25px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 17px;
             transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            background: linear-gradient(135deg, #0077b3, #2aa8e0);
-            box-shadow: 0 5px 15px rgba(0, 136, 204, 0.3);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #0088cc;
-            border: 2px solid #0088cc;
-        }
-
-        .btn-secondary:hover {
-            background: #f0f9ff;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #00c851, #5eff8f);
-        }
-
-        .btn-success:hover {
-            background: linear-gradient(135deg, #00b347, #4cff7a);
-        }
-
-        .btn-admin {
-            background: linear-gradient(135deg, #8e44ad, #9b59b6);
-        }
-
-        .btn-admin:hover {
-            background: linear-gradient(135deg, #7d3c98, #8e44ad);
-        }
-
-        .balance-card {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .balance-item {
-            background: linear-gradient(135deg, #f0f9ff, #e1f5fe);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            border: 2px solid #d1ecff;
-        }
-
-        .currency {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .amount {
-            font-size: 32px;
-            font-weight: 700;
-            color: #0088cc;
-        }
-
-        .currency-symbol {
-            font-size: 20px;
-            margin-right: 2px;
-        }
-
-        .section {
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            color: white;
-            font-size: 20px;
-            margin-bottom: 15px;
-            padding-left: 10px;
-            font-weight: 600;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .stat-item {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #0088cc;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .nav-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-around;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            color: #666;
-            background: none;
             border: none;
             cursor: pointer;
-            padding: 10px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            flex: 1;
-            max-width: 100px;
+            color: white;
         }
 
-        .nav-btn:hover {
-            background: #f0f9ff;
-            color: #0088cc;
-        }
-
-        .nav-btn.active {
-            color: #0088cc;
-            background: #f0f9ff;
-        }
-
-        .nav-btn i {
+        .btn i {
             font-size: 22px;
         }
 
-        .nav-btn span {
-            font-size: 12px;
-            font-weight: 500;
+        .btn-primary {
+            background: linear-gradient(to right, #0088cc, #00a2e8);
         }
 
-        .page {
-            display: none;
-            animation: fadeIn 0.3s ease;
+        .btn-primary:hover {
+            background: linear-gradient(to right, #0077b3, #0091cc);
+            box-shadow: 0 6px 16px rgba(0, 136, 204, 0.3);
         }
 
-        .page.active {
-            display: block;
+        .btn-secondary {
+            background: linear-gradient(to right, #34b7f1, #58c7f3);
         }
 
-        .history-item {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .btn-secondary:hover {
+            background: linear-gradient(to right, #2aa8e0, #4ab8e8);
+            box-shadow: 0 6px 16px rgba(52, 183, 241, 0.3);
         }
 
-        .history-item:last-child {
-            border-bottom: none;
+        .btn-support {
+            background: linear-gradient(to right, #5dbea3, #74d4b7);
         }
 
-        .history-type {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .btn-support:hover {
+            background: linear-gradient(to right, #52ab91, #68c2a6);
+            box-shadow: 0 6px 16px rgba(93, 190, 163, 0.3);
         }
 
-        .history-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 18px;
-        }
-
-        .history-icon.deposit {
-            background: linear-gradient(135deg, #00c851, #5eff8f);
-        }
-
-        .history-icon.payment {
-            background: linear-gradient(135deg, #ff4444, #ff8888);
-        }
-
-        .history-details h4 {
-            color: #333;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .history-details p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .history-amount {
-            text-align: right;
-        }
-
-        .history-amount .amount {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .history-amount .currency {
-            font-size: 12px;
-            color: #999;
-        }
-
-        .deposit-options {
+        /* Особенности */
+        .features {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
         }
 
-        .deposit-option {
-            background: linear-gradient(135deg, #f8fdff, #e6f7ff);
-            border: 2px solid #d1ecff;
-            border-radius: 15px;
+        .feature-item {
+            background-color: #f8fafc;
+            border-radius: 14px;
             padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .deposit-option:hover {
-            background: linear-gradient(135deg, #e6f7ff, #d4f1ff);
-            border-color: #0088cc;
-            transform: translateY(-3px);
-        }
-
-        .deposit-option.active {
-            background: linear-gradient(135deg, #0088cc, #34b7f1);
-            border-color: #0088cc;
-            color: white;
-        }
-
-        .deposit-option.active .currency {
-            color: white;
-        }
-
-        .deposit-option i {
-            font-size: 32px;
-            margin-bottom: 10px;
-            color: #0088cc;
-        }
-
-        .deposit-option.active i {
-            color: white;
-        }
-
-        .deposit-option .currency {
-            font-size: 18px;
-            font-weight: 600;
-            color: #0088cc;
-            margin-bottom: 5px;
-        }
-
-        .deposit-option.active .currency {
-            color: white;
-        }
-
-        .deposit-amounts {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .amount-btn {
-            background: white;
-            border: 2px solid #d1ecff;
-            border-radius: 10px;
-            padding: 15px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            color: #0088cc;
-        }
-
-        .amount-btn:hover {
-            background: #f0f9ff;
-            border-color: #0088cc;
-        }
-
-        .amount-btn.active {
-            background: #0088cc;
-            color: white;
-            border-color: #0088cc;
-        }
-
-        .custom-amount {
-            margin-top: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #0088cc;
-            font-weight: 500;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #d1ecff;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #0088cc;
-            box-shadow: 0 0 0 3px rgba(0, 136, 204, 0.1);
-        }
-
-        .info-box {
-            background: #f0f9ff;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
             border-left: 4px solid #0088cc;
-        }
-
-        .info-box p {
-            color: #333;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .address-box {
-            background: #f8fdff;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            border: 2px dashed #0088cc;
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 14px;
-            color: #333;
-            text-align: center;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #0088cc;
-        }
-
-        .loading i {
-            font-size: 40px;
-            margin-bottom: 15px;
-        }
-
-        .hash-input-section {
-            margin-top: 20px;
-            display: none;
-        }
-
-        .hash-input-section.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .admin-access-section {
-            margin-top: 20px;
-            display: none;
-        }
-
-        .admin-access-section.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .admin-panel {
-            display: none;
-        }
-
-        .admin-panel.active {
-            display: block;
-        }
-
-        .admin-header {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(142, 68, 173, 0.2);
-            text-align: center;
-        }
-
-        .admin-logo {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #8e44ad, #9b59b6);
-            border-radius: 15px;
-            margin: 0 auto 15px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            color: white;
-        }
-
-        .admin-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .admin-stat-item {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 3px 10px rgba(142, 68, 173, 0.1);
-        }
-
-        .admin-stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #8e44ad;
-            margin-bottom: 5px;
-        }
-
-        .admin-stat-label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .admin-menu {
-            display: grid;
+            flex-direction: column;
             gap: 10px;
         }
 
-        .admin-btn {
-            background: white;
-            border: 2px solid #e6d0f1;
-            border-radius: 12px;
-            padding: 18px 20px;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .feature-item h3 {
+            color: #0088cc;
+            font-size: 18px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
+            gap: 10px;
         }
 
-        .admin-btn:hover {
-            background: #f9f0ff;
-            border-color: #8e44ad;
-            transform: translateY(-2px);
+        /* Тарифы */
+        .pricing-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
 
-        .admin-btn i {
-            font-size: 20px;
-            color: #8e44ad;
+        .price-item {
+            background: linear-gradient(to bottom right, #f8fafc, #eef5fb);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #e1e8f0;
         }
 
-        .user-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .user-item {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .user-info h4 {
-            color: #333;
-            font-size: 16px;
+        .price-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0088cc;
             margin-bottom: 5px;
         }
 
-        .user-info p {
+        .price-desc {
             color: #666;
             font-size: 14px;
         }
 
-        .user-balance {
-            text-align: right;
+        /* Футер */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px solid #e6e9ec;
+            color: #777;
+            font-size: 14px;
         }
 
-        .user-balance .amount {
-            font-size: 18px;
-            font-weight: 600;
-            color: #8e44ad;
+        .footer a {
+            color: #0088cc;
+            text-decoration: none;
         }
 
-        .user-balance .currency {
-            font-size: 12px;
-            color: #999;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        #home {
-            padding-top: 10px;
-            padding-bottom: 20px;
-        }
-
-        .app-header {
-            margin-top: 10px;
-        }
-
-        .btn-admin {
-            margin-bottom: 80px;
-        }
-
+        /* Адаптивность */
         @media (max-width: 600px) {
             .container {
-                padding: 10px;
+                padding: 15px;
             }
             
-            .app-header {
+            .header {
+                padding: 20px 15px;
+                border-radius: 0 0 15px 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .card {
                 padding: 20px;
             }
             
-            .balance-card {
-                grid-template-columns: 1fr;
+            .btn {
+                padding: 16px 20px;
+                font-size: 16px;
             }
             
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .deposit-amounts {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .admin-stats-grid {
+            .features, .pricing-table {
                 grid-template-columns: 1fr;
             }
         }
@@ -696,1036 +243,134 @@
 </head>
 <body>
     <div class="container">
-        <!-- Главная страница -->
-        <div class="page active" id="home">
-            <div class="app-header">
-                <div class="logo">
-                    <i class="fas fa-sms"></i>
+        <!-- Заголовок -->
+        <div class="header">
+            <h1><i class="fas fa-sms"></i> SMS Mailing Бот</h1>
+            <p>Профессиональная рассылка SMS на российские номера для украинских колл-центров и обычных граждан</p>
+        </div>
+
+        <!-- Основная информация -->
+        <div class="card">
+            <h2><i class="fas fa-info-circle"></i> О нашем боте</h2>
+            <p>SMS Mailing Bot — это профессиональный инструмент для массовой рассылки SMS на российские номера. Наш сервис идеально подходит для украинских колл-центров, бизнеса и частных пользователей, которым необходимо отправлять уведомления, рекламные сообщения или информационные рассылки.</p>
+            
+            <div class="features">
+                <div class="feature-item">
+                    <h3><i class="fas fa-bolt"></i> Быстро</h3>
+                    <p>Отправка тысяч SMS за несколько минут</p>
                 </div>
-                <h1>SMS Mailing</h1>
-                <p class="subtitle">Отправляйте СМС рассылки быстро и удобно. Идеально для бизнеса и уведомлений.</p>
-                <div class="prices">
-                    <div class="price-badge">
-                        <i class="fas fa-gem"></i> 1 СМС = 1 USDT
-                    </div>
-                    <div class="price-badge">
-                        <i class="fas fa-bolt"></i> 1 СМС = 1.63 TON
-                    </div>
+                <div class="feature-item">
+                    <h3><i class="fas fa-shield-alt"></i> Надежно</h3>
+                    <p>Гарантированная доставка сообщений</p>
+                </div>
+                <div class="feature-item">
+                    <h3><i class="fas fa-ruble-sign"></i> Выгодно</h3>
+                    <p>Конкурентные цены и гибкая система тарифов</p>
                 </div>
             </div>
+        </div>
 
-            <div class="balance-card">
-                <div class="balance-item">
-                    <div class="currency">
-                        <i class="fas fa-gem"></i> USDT
-                    </div>
-                    <div class="amount">
-                        <span class="currency-symbol">$</span>
-                        <span id="balance-usdt">0</span>
-                    </div>
-                </div>
-                <div class="balance-item">
-                    <div class="currency">
-                        <i class="fas fa-bolt"></i> TON
-                    </div>
-                    <div class="amount">
-                        <span class="currency-symbol">⏣</span>
-                        <span id="balance-ton">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2 class="section-title">Быстрые действия</h2>
-                <button class="btn" onclick="showPage('mailing')">
-                    <i class="fas fa-paper-plane"></i>
-                    Запустить рассылку
-                </button>
-                <button class="btn btn-secondary" onclick="showPage('deposit')">
-                    <i class="fas fa-wallet"></i>
-                    Пополнить баланс
-                </button>
-            </div>
-
-            <div class="section">
-                <h2 class="section-title">Статистика</h2>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" id="total-sms">0</div>
-                        <div class="stat-label">Всего СМС</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="total-cost">0</div>
-                        <div class="stat-label">Общая стоимость</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="success-rate">100%</div>
-                        <div class="stat-label">Успешных</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="pending">0</div>
-                        <div class="stat-label">В ожидании</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="admin-access-section" id="admin-access-section">
-                <div class="input-group">
-                    <label for="admin-key">
-                        <i class="fas fa-key"></i> Ключ доступа
-                    </label>
-                    <input 
-                        type="password" 
-                        id="admin-key" 
-                        placeholder="Введите ключ доступа"
-                    >
-                    <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                        Введите ключ для доступа к админ панели
-                    </div>
-                </div>
+        <!-- Кнопки для переходов -->
+        <div class="card">
+            <h2><i class="fas fa-external-link-alt"></i> Быстрые ссылки</h2>
+            <p>Перейдите в нужный раздел, чтобы получить дополнительную информацию или начать работу с ботом:</p>
+            
+            <div class="buttons-container">
+                <a href="https://t.me/NewsRuSms" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-telegram"></i>
+                    <span>Канал новостей</span>
+                </a>
                 
-                <button class="btn btn-admin" onclick="enterAdminPanel()">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Войти в админ панель
-                </button>
-            </div>
-
-            <button class="btn btn-admin" onclick="showAdminAccess()">
-                <i class="fas fa-user-shield"></i>
-                Вход в админ панель
-            </button>
-        </div>
-
-        <!-- Страница рассылки -->
-        <div class="page" id="mailing">
-            <div class="card">
-                <div class="card-title">
-                    <i class="fas fa-paper-plane"></i>
-                    Новая рассылка
-                </div>
+                <a href="https://t.me/SmsRuBoss" class="btn btn-support" target="_blank">
+                    <i class="fas fa-headset"></i>
+                    <span>Поддержка</span>
+                </a>
                 
-                <div class="input-group">
-                    <label for="phone-numbers">
-                        <i class="fas fa-phone"></i> Номера телефонов
-                    </label>
-                    <textarea 
-                        id="phone-numbers" 
-                        rows="5" 
-                        placeholder="Введите номера через точку с запятой:
-+79991234567;
-89991234567;
-79001234567;"
-                    ></textarea>
-                </div>
-
-                <div class="input-group">
-                    <label for="sms-text">
-                        <i class="fas fa-comment-alt"></i> Текст СМС
-                    </label>
-                    <textarea 
-                        id="sms-text" 
-                        rows="4" 
-                        placeholder="Введите текст сообщения..."
-                        maxlength="1600"
-                    ></textarea>
-                    <div style="text-align: right; margin-top: 5px; font-size: 14px; color: #666;">
-                        <span id="char-count">0</span>/1600 символов
-                    </div>
-                </div>
-
-                <div class="info-box">
-                    <p><strong>Формат номеров:</strong><br>
-                    • Начинаются на +7, 7 или 8<br>
-                    • Разделяются точкой с запятой (;)<br>
-                    • Каждый номер с новой строки</p>
-                </div>
-
-                <div class="info-box">
-                    <p><strong>Стоимость:</strong><br>
-                    • 1 номер = 1 USDT или 1.63 TON<br>
-                    • К оплате: <span id="sms-cost">0</span> USDT / <span id="sms-cost-ton">0</span> TON</p>
-                </div>
-
-                <button class="btn" onclick="submitMailing()">
-                    <i class="fas fa-paper-plane"></i>
-                    Отправить на модерацию
-                </button>
-                <button class="btn btn-secondary" onclick="showPage('home')">
-                    <i class="fas fa-arrow-left"></i>
-                    Назад
-                </button>
+                <a href="https://t.me/SMSMailingRu_Bot" class="btn btn-secondary" target="_blank">
+                    <i class="fas fa-robot"></i>
+                    <span>Бот рассылки</span>
+                </a>
             </div>
         </div>
 
-        <!-- Страница пополнения -->
-        <div class="page" id="deposit">
-            <div class="card">
-                <div class="card-title">
-                    <i class="fas fa-wallet"></i>
-                    Пополнение баланса
+        <!-- Тарифы -->
+        <div class="card">
+            <h2><i class="fas fa-tags"></i> Тарифы</h2>
+            <p>Простая и прозрачная система оплаты. Пополняйте баланс в USDT или TON:</p>
+            
+            <div class="pricing-table">
+                <div class="price-item">
+                    <div class="price-amount">1 CMC</div>
+                    <div class="price-desc">= 1 USDT</div>
                 </div>
-
-                <div class="deposit-options">
-                    <div class="deposit-option active" onclick="selectCurrency('USDT')">
-                        <i class="fas fa-gem"></i>
-                        <div class="currency">USDT</div>
-                        <div style="font-size: 12px; color: #666;">TRON (TRC20)</div>
-                    </div>
-                    <div class="deposit-option" onclick="selectCurrency('TON')">
-                        <i class="fas fa-bolt"></i>
-                        <div class="currency">TON</div>
-                        <div style="font-size: 12px; color: #666;">The Open Network</div>
-                    </div>
+                <div class="price-item">
+                    <div class="price-amount">1 CMC</div>
+                    <div class="price-desc">= 0.65 TON</div>
                 </div>
-
-                <div class="deposit-amounts">
-                    <div class="amount-btn active" onclick="selectAmount(10)">10</div>
-                    <div class="amount-btn" onclick="selectAmount(25)">25</div>
-                    <div class="amount-btn" onclick="selectAmount(50)">50</div>
-                    <div class="amount-btn" onclick="selectAmount(100)">100</div>
-                    <div class="amount-btn" onclick="selectAmount(250)">250</div>
-                    <div class="amount-btn" onclick="selectCustomAmount()">Другая</div>
+                <div class="price-item">
+                    <div class="price-amount">Быстро</div>
+                    <div class="price-desc">Настройка за 5-15 минут</div>
                 </div>
-
-                <div class="custom-amount" id="custom-amount-section" style="display: none;">
-                    <div class="input-group">
-                        <label>Сумма пополнения (<span id="selected-currency">USDT</span>)</label>
-                        <input 
-                            type="number" 
-                            id="custom-amount-input" 
-                            placeholder="Введите сумму"
-                            min="10"
-                            step="0.1"
-                        >
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            Минимальная сумма: 10 <span id="min-currency">USDT</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-box" id="deposit-info">
-                    <p><strong>USDT (TRON TRC20)</strong><br>
-                    Отправьте точную сумму на указанный адрес.<br>
-                    Комиссию оплачивает отправитель.</p>
-                </div>
-
-                <div class="address-box" id="deposit-address">
-                    TJSgjT9n1234567890abcdefghijklmnop
-                </div>
-
-                <div class="hash-input-section" id="hash-input-section">
-                    <div class="input-group">
-                        <label for="tx-hash">
-                            <i class="fas fa-hashtag"></i> HASH транзакции
-                        </label>
-                        <input 
-                            type="text" 
-                            id="tx-hash" 
-                            placeholder="Введите хеш транзакции (например: 0x1234...)"
-                        >
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            Скопируйте хеш транзакции из вашего кошелька
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-success" onclick="submitPayment()">
-                        <i class="fas fa-check"></i>
-                        Отправить на проверку
-                    </button>
-                </div>
-
-                <button class="btn" onclick="copyAddress()">
-                    <i class="fas fa-copy"></i>
-                    Скопировать адрес
-                </button>
-                <button class="btn btn-success" onclick="showHashInput()">
-                    <i class="fas fa-money-check-alt"></i>
-                    Я оплатил
-                </button>
-                <button class="btn btn-secondary" onclick="showPage('home')">
-                    <i class="fas fa-arrow-left"></i>
-                    Назад
-                </button>
             </div>
+            
+            <p style="margin-top: 20px; font-size: 15px; color: #666;">
+                <i class="fas fa-check-circle" style="color: #5dbea3;"></i> Минимальный баланс для начала работы: <strong>10.0 USDT</strong>
+            </p>
         </div>
 
-        <!-- Страница истории -->
-        <div class="page" id="history">
-            <div class="card">
-                <div class="card-title">
-                    <i class="fas fa-history"></i>
-                    История операций
-                </div>
-                
-                <div id="transactions-list">
-                    <div class="loading">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Загрузка истории...</p>
-                    </div>
-                </div>
-                
-                <button class="btn btn-secondary" onclick="showPage('home')">
-                    <i class="fas fa-arrow-left"></i>
-                    Назад
-                </button>
-            </div>
+        <!-- Как начать -->
+        <div class="card">
+            <h2><i class="fas fa-play-circle"></i> Как начать</h2>
+            <ol style="padding-left: 20px; margin-top: 10px;">
+                <li style="margin-bottom: 10px;">Нажмите кнопку "Бот рассылки" выше или перейдите по ссылке <a href="https://t.me/SMSMailingRu_Bot" target="_blank">@SMSMailingRu_Bot</a></li>
+                <li style="margin-bottom: 10px;">Введите команду <code>/start</code> для активации бота</li>
+                <li style="margin-bottom: 10px;">Пополните баланс через доступные методы оплаты</li>
+                <li style="margin-bottom: 10px;">Создайте свою первую SMS рассылку</li>
+                <li>Отслеживайте статистику доставки в реальном времени</li>
+            </ol>
         </div>
 
-        <!-- Страница админ панели -->
-        <div class="page" id="admin-panel">
-            <div class="admin-header">
-                <div class="admin-logo">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <h1>Админ панель</h1>
-                <p class="subtitle">Управление системой SMS рассылок</p>
-            </div>
-
-            <div class="admin-stats-grid">
-                <div class="admin-stat-item">
-                    <div class="admin-stat-value" id="admin-total-users">0</div>
-                    <div class="admin-stat-label">Пользователей</div>
-                </div>
-                <div class="admin-stat-item">
-                    <div class="admin-stat-value" id="admin-total-mailings">0</div>
-                    <div class="admin-stat-label">Рассылок</div>
-                </div>
-                <div class="admin-stat-item">
-                    <div class="admin-stat-value" id="admin-pending">0</div>
-                    <div class="admin-stat-label">На проверке</div>
-                </div>
-                <div class="admin-stat-item">
-                    <div class="admin-stat-value" id="admin-total-balance">0</div>
-                    <div class="admin-stat-label">USDT</div>
-                </div>
-            </div>
-
-            <div class="admin-menu">
-                <button class="admin-btn" onclick="showAdminSection('payments')">
-                    <i class="fas fa-money-check-alt"></i>
-                    Список платежей
-                </button>
-                <button class="admin-btn" onclick="showAdminSection('mailings')">
-                    <i class="fas fa-envelope"></i>
-                    Заявки на рассылку
-                </button>
-                <button class="admin-btn" onclick="showAdminSection('users')">
-                    <i class="fas fa-users"></i>
-                    Управление пользователями
-                </button>
-                <button class="admin-btn" onclick="showAdminSection('settings')">
-                    <i class="fas fa-cog"></i>
-                    Настройки системы
-                </button>
-            </div>
-
-            <div id="admin-content" style="margin-top: 20px;">
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-money-check-alt"></i>
-                        Список платежей
-                    </div>
-                    <div class="user-list" id="payment-requests-list">
-                        <div class="loading">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <p>Загрузка платежей...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn btn-secondary" onclick="showPage('home')" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i>
-                На главную
-            </button>
-        </div>
-
-        <!-- Нижняя навигация -->
-        <div class="nav-bottom">
-            <button class="nav-btn active" onclick="showPage('home')">
-                <i class="fas fa-home"></i>
-                <span>Главная</span>
-            </button>
-            <button class="nav-btn" onclick="showPage('mailing')">
-                <i class="fas fa-paper-plane"></i>
-                <span>Рассылка</span>
-            </button>
-            <button class="nav-btn" onclick="showPage('deposit')">
-                <i class="fas fa-wallet"></i>
-                <span>Пополнение</span>
-            </button>
-            <button class="nav-btn" onclick="showPage('history')">
-                <i class="fas fa-history"></i>
-                <span>История</span>
-            </button>
+        <!-- Футер -->
+        <div class="footer">
+            <p>SMS Mailing Bot &copy; 2023. Все права защищены.</p>
+            <p>Используя наш бот, вы принимаете <a href="#">Пользовательское соглашение</a> Telegram для разработчиков.</p>
+            <p style="margin-top: 10px; font-size: 13px;">
+                <i class="fas fa-envelope"></i> Техническая поддержка: @SmsRuBoss
+            </p>
         </div>
     </div>
 
     <script>
-        // ==================== КОНФИГУРАЦИЯ ====================
-        // ⚠️ ВСТАВЬ СЮДА СВОЙ URL из Google Apps Script ⚠️
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx7hz0wXJSnDAcIt-OrHqpy0IZKVtthqaOZhaSw2M2afXxbY4EutlZgP7RwmrkZnv8S/exec';
-        const ADMIN_KEY = '1235';
-        
-        // Инициализация Telegram Web App
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.MainButton.hide();
-        
-        // Текущий пользователь
-        const tgUser = tg.initDataUnsafe?.user || {
-            id: 6864759899,
-            username: 'admin',
-            first_name: 'Админ'
-        };
-        
-        // Состояние приложения
-        let appState = {
-            selectedCurrency: 'USDT',
-            selectedAmount: 10,
-            isAdmin: false
-        };
-
-        // DOM элементы
-        const elements = {
-            balanceUsdt: document.getElementById('balance-usdt'),
-            balanceTon: document.getElementById('balance-ton'),
-            smsCost: document.getElementById('sms-cost'),
-            smsCostTon: document.getElementById('sms-cost-ton'),
-            phoneNumbers: document.getElementById('phone-numbers'),
-            smsText: document.getElementById('sms-text'),
-            charCount: document.getElementById('char-count'),
-            depositInfo: document.getElementById('deposit-info'),
-            depositAddress: document.getElementById('deposit-address'),
-            selectedCurrency: document.getElementById('selected-currency'),
-            minCurrency: document.getElementById('min-currency'),
-            customAmountSection: document.getElementById('custom-amount-section'),
-            customAmountInput: document.getElementById('custom-amount-input'),
-            transactionsList: document.getElementById('transactions-list'),
-            hashInputSection: document.getElementById('hash-input-section'),
-            txHash: document.getElementById('tx-hash'),
-            adminAccessSection: document.getElementById('admin-access-section'),
-            adminKey: document.getElementById('admin-key')
-        };
-
-        // Инициализация
+        // Добавляем интерактивность кнопкам
         document.addEventListener('DOMContentLoaded', function() {
-            setupEventListeners();
-            updateSMSCost();
-            selectCurrency('USDT');
-            selectAmount(10);
-        });
-
-        function setupEventListeners() {
-            elements.smsText.addEventListener('input', function() {
-                elements.charCount.textContent = this.value.length;
-                updateSMSCost();
-            });
-
-            elements.phoneNumbers.addEventListener('input', updateSMSCost);
-
-            elements.customAmountInput.addEventListener('input', function() {
-                const amount = parseFloat(this.value) || 0;
-                if (amount >= 10) {
-                    appState.selectedAmount = amount;
-                }
-            });
-        }
-
-        // ==================== НАВИГАЦИЯ ====================
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
-
-            document.getElementById(pageId).classList.add('active');
-
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            const navBtn = document.querySelector(`.nav-btn[onclick*="${pageId}"]`);
-            if (navBtn) {
-                navBtn.classList.add('active');
-            } else {
-                document.querySelector('.nav-btn[onclick*="home"]').classList.add('active');
-            }
-
-            switch(pageId) {
-                case 'history':
-                    loadTransactions();
-                    break;
-                case 'mailing':
-                    updateSMSCost();
-                    break;
-                case 'deposit':
-                    elements.hashInputSection.classList.remove('active');
-                    elements.txHash.value = '';
-                    break;
-                case 'admin-panel':
-                    if (appState.isAdmin) {
-                        loadAdminPanel();
-                    } else {
-                        showPage('home');
-                    }
-                    break;
-            }
-        }
-
-        // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
-        
-        // Отправка данных на сервер
-        async function sendToServer(action, data) {
-            try {
-                const params = new URLSearchParams();
-                params.append('action', action);
-                
-                // Добавляем все данные
-                for (const key in data) {
-                    if (data[key] !== undefined && data[key] !== null) {
-                        params.append(key, data[key]);
-                    }
-                }
-                
-                // Добавляем данные пользователя
-                params.append('user_id', tgUser.id);
-                params.append('username', tgUser.username || `user_${tgUser.id}`);
-                params.append('first_name', tgUser.first_name || 'Пользователь');
-                
-                const url = `${API_URL}?${params.toString()}`;
-                
-                console.log('Отправка данных на:', url);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    mode: 'no-cors'
-                });
-                
-                console.log('Данные отправлены успешно');
-                return { success: true };
-                
-            } catch (error) {
-                console.error('Ошибка отправки:', error);
-                return { success: false, error: error.message };
-            }
-        }
-        
-        // Получение данных с сервера
-        async function getFromServer(params) {
-            try {
-                const urlParams = new URLSearchParams(params);
-                const url = `${API_URL}?${urlParams.toString()}`;
-                
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return await response.json();
-                
-            } catch (error) {
-                console.error('Ошибка получения данных:', error);
-                return null;
-            }
-        }
-        
-        // ==================== РАССЫЛКА ====================
-        function updateSMSCost() {
-            const numbersText = elements.phoneNumbers.value;
-            const numbers = numbersText.split(';')
-                .map(n => n.trim())
-                .filter(n => n.length > 5);
+            const buttons = document.querySelectorAll('.btn');
             
-            const count = numbers.length;
-            const costUSDT = count * 1;
-            const costTON = count * 1.63;
-            
-            elements.smsCost.textContent = costUSDT.toFixed(2);
-            elements.smsCostTon.textContent = costTON.toFixed(2);
-        }
-        
-        async function submitMailing() {
-            const numbers = elements.phoneNumbers.value.trim();
-            const text = elements.smsText.value.trim();
-            
-            if (!numbers) {
-                tg.showAlert('Введите номера телефонов!');
-                return;
-            }
-            
-            if (!text) {
-                tg.showAlert('Введите текст СМС!');
-                return;
-            }
-            
-            const phoneArray = numbers.split(';')
-                .map(n => n.trim())
-                .filter(n => n.length > 5);
-            const phoneCount = phoneArray.length;
-            
-            const costUSDT = phoneCount * 1;
-            const costTON = phoneCount * 1.63;
-            
-            const confirm = await tg.showConfirm(
-                `Подтвердить заявку на рассылку?\n\n` +
-                `📱 Номеров: ${phoneCount}\n` +
-                `💰 Стоимость: ${costUSDT} USDT (${costTON} TON)\n` +
-                `📝 Статус: После оплаты`
-            );
-            
-            if (!confirm) return;
-            
-            const result = await sendToServer('add_mailing', {
-                phones: numbers,
-                text: text,
-                phone_count: phoneCount,
-                cost_usdt: costUSDT.toFixed(2),
-                cost_ton: costTON.toFixed(2)
-            });
-            
-            if (result.success) {
-                tg.showAlert(`✅ Заявка отправлена!\n\nНомеров: ${phoneCount}\nСтоимость: ${costUSDT} USDT\n\nОжидайте проверки оплаты.`);
-                
-                elements.phoneNumbers.value = '';
-                elements.smsText.value = '';
-                elements.charCount.textContent = '0';
-                
-                showPage('home');
-            } else {
-                tg.showAlert('Ошибка отправки заявки. Попробуйте снова.');
-            }
-        }
-        
-        // ==================== ПЛАТЕЖИ ====================
-        function selectCurrency(currency) {
-            appState.selectedCurrency = currency;
-            
-            document.querySelectorAll('.deposit-option').forEach(option => {
-                option.classList.remove('active');
-            });
-            
-            if (currency === 'USDT') {
-                document.querySelectorAll('.deposit-option')[0].classList.add('active');
-                elements.depositInfo.innerHTML = `
-                    <p><strong>USDT (TRON TRC20)</strong><br>
-                    Отправьте точную сумму на указанный адрес.<br>
-                    Комиссию оплачивает отправитель.</p>
-                `;
-                elements.selectedCurrency.textContent = 'USDT';
-                elements.minCurrency.textContent = 'USDT';
-                elements.depositAddress.textContent = 'TJSgjT9n1234567890abcdefghijklmnop';
-            } else {
-                document.querySelectorAll('.deposit-option')[1].classList.add('active');
-                elements.depositInfo.innerHTML = `
-                    <p><strong>TON (The Open Network)</strong><br>
-                    Отправьте точную сумму на указанный адрес.<br>
-                    Комиссию оплачивает отправитель.</p>
-                `;
-                elements.selectedCurrency.textContent = 'TON';
-                elements.minCurrency.textContent = 'TON';
-                elements.depositAddress.textContent = 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N';
-            }
-        }
-        
-        function selectAmount(amount) {
-            appState.selectedAmount = amount;
-            
-            document.querySelectorAll('.amount-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (parseFloat(btn.textContent) === amount || 
-                    (btn.textContent === 'Другая' && amount === 'custom')) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            if (amount !== 'custom') {
-                elements.customAmountSection.style.display = 'none';
-                elements.customAmountInput.value = amount;
-            } else {
-                elements.customAmountSection.style.display = 'block';
-                elements.customAmountInput.focus();
-            }
-        }
-        
-        function selectCustomAmount() {
-            selectAmount('custom');
-        }
-        
-        function copyAddress() {
-            const address = elements.depositAddress.textContent;
-            navigator.clipboard.writeText(address)
-                .then(() => {
-                    tg.showAlert('Адрес скопирован в буфер обмена!');
-                })
-                .catch(err => {
-                    tg.showAlert('Ошибка копирования: ' + err);
-                });
-        }
-        
-        function showHashInput() {
-            elements.hashInputSection.classList.add('active');
-            elements.txHash.focus();
-            
-            tg.showAlert('Пожалуйста, введите HASH транзакции после оплаты');
-        }
-        
-        async function submitPayment() {
-            const hash = elements.txHash.value.trim();
-            const amount = appState.selectedAmount;
-            const currency = appState.selectedCurrency;
-            
-            if (!hash) {
-                tg.showAlert('Введите HASH транзакции!');
-                return;
-            }
-            
-            if (hash.length < 10) {
-                tg.showAlert('HASH транзакции должен содержать не менее 10 символов!');
-                return;
-            }
-            
-            const confirm = await tg.showConfirm(
-                `Подтвердить платеж?\n\n` +
-                `💰 Сумма: ${amount} ${currency}\n` +
-                `🔗 Хеш: ${hash.substring(0, 20)}...`
-            );
-            
-            if (!confirm) return;
-            
-            const result = await sendToServer('add_payment', {
-                amount: amount,
-                currency: currency,
-                hash: hash
-            });
-            
-            if (result.success) {
-                tg.showAlert(`✅ Платеж отправлен на проверку!\n\nАдмин проверит его в ближайшее время.`);
-                
-                elements.txHash.value = '';
-                elements.hashInputSection.classList.remove('active');
-                
-                showPage('home');
-            } else {
-                tg.showAlert('Ошибка отправки платежа. Попробуйте снова.');
-            }
-        }
-        
-        // ==================== АДМИН ПАНЕЛЬ ====================
-        function showAdminAccess() {
-            elements.adminAccessSection.classList.add('active');
-            elements.adminKey.focus();
-        }
-        
-        function enterAdminPanel() {
-            const key = elements.adminKey.value.trim();
-            
-            if (key !== ADMIN_KEY) {
-                tg.showAlert('Неверный ключ доступа!');
-                return;
-            }
-            
-            appState.isAdmin = true;
-            tg.showAlert('Доступ разрешен! Вход в админ панель...');
-            
-            elements.adminKey.value = '';
-            elements.adminAccessSection.classList.remove('active');
-            
-            showPage('admin-panel');
-        }
-        
-        async function loadAdminPanel() {
-            try {
-                // Загружаем платежи
-                const payments = await getFromServer({ sheet: 'payments' });
-                if (payments && !payments.error) {
-                    displayPaymentsInAdmin(payments);
-                } else {
-                    document.getElementById('payment-requests-list').innerHTML = 
-                        '<p style="text-align: center; color: #666; padding: 20px;">Ошибка загрузки платежей</p>';
-                }
-                
-                // Загружаем заявки
-                const mailings = await getFromServer({ sheet: 'mailings' });
-                if (mailings && !mailings.error) {
-                    updateAdminStats(payments || [], mailings || []);
-                }
-                
-            } catch (error) {
-                console.error('Ошибка загрузки админ панели:', error);
-                tg.showAlert('Ошибка загрузки данных');
-            }
-        }
-        
-        function displayPaymentsInAdmin(payments) {
-            const container = document.getElementById('payment-requests-list');
-            if (!container) return;
-            
-            let html = '';
-            
-            // Проверяем что payments - массив
-            if (!Array.isArray(payments)) {
-                html = '<p style="text-align: center; color: #666; padding: 20px;">Нет данных о платежах</p>';
-                container.innerHTML = html;
-                return;
-            }
-            
-            // Фильтруем только ожидающие платежи
-            const pendingPayments = payments.filter(p => p.Статус === 'ожидание');
-            
-            if (pendingPayments.length === 0) {
-                html = '<p style="text-align: center; color: #666; padding: 20px;">Нет платежей на проверке</p>';
-            } else {
-                pendingPayments.forEach(payment => {
-                    html += `
-                        <div class="payment-request" style="margin-bottom: 15px; padding: 15px; border: 2px solid #d1ecff; border-radius: 10px; background: #f8fdff;">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                                <div>
-                                    <h4 style="margin: 0 0 5px 0; color: #333;">${payment.Имя_пользователя || 'Пользователь'}</h4>
-                                    <p style="margin: 0; color: #666; font-size: 14px;">
-                                        ID: ${payment.ID_пользователя || 'N/A'}<br>
-                                        Дата: ${payment.Дата || 'N/A'}
-                                    </p>
-                                </div>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 20px; font-weight: 700; color: #0088cc;">
-                                        ${payment.Сумма || 0} ${payment.Валюта || 'USDT'}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-bottom: 10px;">
-                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Хеш транзакции:</div>
-                                <div style="background: white; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; word-break: break-all; color: #333;">
-                                    ${payment.Хеш_транзакции || 'Не указан'}
-                                </div>
-                            </div>
-                            
-                            <div style="display: flex; gap: 10px;">
-                                <button onclick="tg.showAlert('Функция подтверждения будет добавлена')" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #00c851, #5eff8f); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-check"></i>
-                                    Подтвердить
-                                </button>
-                                <button onclick="tg.showAlert('Функция отмены будет добавлена')" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ff4444, #ff8888); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-times"></i>
-                                    Отменить
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-            
-            container.innerHTML = html;
-        }
-        
-        function updateAdminStats(payments, mailings) {
-            if (!Array.isArray(payments)) payments = [];
-            if (!Array.isArray(mailings)) mailings = [];
-            
-            const totalUsers = new Set(payments.map(p => p.ID_пользователя).filter(Boolean)).size;
-            const totalMailings = mailings.length;
-            const pendingPayments = payments.filter(p => p.Статус === 'ожидание').length;
-            const pendingMailings = mailings.filter(m => m.Статус === 'ожидание').length;
-            
-            document.getElementById('admin-total-users').textContent = totalUsers;
-            document.getElementById('admin-total-mailings').textContent = totalMailings;
-            document.getElementById('admin-pending').textContent = pendingPayments + pendingMailings;
-            
-            const totalBalance = payments
-                .filter(p => p.Статус === 'подтверждено')
-                .reduce((sum, p) => sum + (parseFloat(p.Сумма) || 0), 0);
-            document.getElementById('admin-total-balance').textContent = totalBalance.toFixed(2);
-        }
-        
-        function showAdminSection(section) {
-            let content = '';
-            
-            switch(section) {
-                case 'payments':
-                    content = `
-                        <div class="card">
-                            <div class="card-title">
-                                <i class="fas fa-money-check-alt"></i>
-                                Список платежей
-                            </div>
-                            <div class="user-list" id="payment-requests-list">
-                                <div class="loading">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <p>Загрузка платежей...</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Анимация нажатия
+                    this.style.transform = 'scale(0.98)';
                     setTimeout(() => {
-                        loadAdminPanel();
-                    }, 0);
-                    break;
+                        this.style.transform = '';
+                    }, 150);
                     
-                case 'mailings':
-                    content = `
-                        <div class="card">
-                            <div class="card-title">
-                                <i class="fas fa-envelope"></i>
-                                Заявки на рассылку
-                            </div>
-                            <div class="user-list" id="mailings-list">
-                                <div class="loading">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <p>Загрузка заявок...</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    setTimeout(async () => {
-                        try {
-                            const mailings = await getFromServer({ sheet: 'mailings' });
-                            displayMailingsSection(mailings || []);
-                        } catch (error) {
-                            console.error('Ошибка загрузки заявок:', error);
-                        }
-                    }, 0);
-                    break;
-                    
-                case 'users':
-                    content = `
-                        <div class="card">
-                            <div class="card-title">
-                                <i class="fas fa-users"></i>
-                                Управление пользователями
-                            </div>
-                            <div class="user-list">
-                                <p style="text-align: center; color: #666; padding: 20px;">Функция в разработке</p>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'settings':
-                    content = `
-                        <div class="card">
-                            <div class="card-title">
-                                <i class="fas fa-cog"></i>
-                                Настройки системы
-                            </div>
-                            <div class="input-group">
-                                <label>Цена за 1 SMS (USDT)</label>
-                                <input type="number" value="1" min="0.1" step="0.1">
-                            </div>
-                            <div class="input-group">
-                                <label>Цена за 1 SMS (TON)</label>
-                                <input type="number" value="1.63" min="0.1" step="0.01">
-                            </div>
-                            <div class="input-group">
-                                <label>Минимальное пополнение</label>
-                                <input type="number" value="10" min="1" step="1">
-                            </div>
-                            <button class="btn" onclick="tg.showAlert('Настройки сохранены (тестовый режим)')">
-                                <i class="fas fa-save"></i>
-                                Сохранить настройки
-                            </button>
-                        </div>
-                    `;
-                    break;
-            }
-            
-            document.getElementById('admin-content').innerHTML = content;
-        }
-        
-        function displayMailingsSection(mailings) {
-            const container = document.getElementById('mailings-list');
-            if (!container) return;
-            
-            let html = '';
-            
-            if (!Array.isArray(mailings) || mailings.length === 0) {
-                html = '<p style="text-align: center; color: #666; padding: 20px;">Нет заявок на рассылку</p>';
-            } else {
-                mailings.forEach(mailing => {
-                    const shortText = mailing.Текст_СМС && mailing.Текст_СМС.length > 50 
-                        ? mailing.Текст_СМС.substring(0, 50) + '...' 
-                        : mailing.Текст_СМС || 'Нет текста';
-                    
-                    html += `
-                        <div class="mailing-request" style="margin-bottom: 15px; padding: 15px; border: 2px solid #e6d0f1; border-radius: 10px; background: #f9f0ff;">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                                <div>
-                                    <h4 style="margin: 0 0 5px 0; color: #333;">${mailing.Имя_пользователя || 'Пользователь'}</h4>
-                                    <p style="margin: 0; color: #666; font-size: 14px;">
-                                        ID: ${mailing.ID_пользователя || 'N/A'}<br>
-                                        Дата: ${mailing.Дата || 'N/A'}
-                                    </p>
-                                </div>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 18px; font-weight: 700; color: #8e44ad;">
-                                        ${mailing.Количество_СМС || 0} SMS
-                                    </div>
-                                    <div style="font-size: 14px; color: #666;">
-                                        ${mailing.Стоимость_USDT || 0} USDT
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-bottom: 10px;">
-                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Текст СМС:</div>
-                                <div style="background: white; padding: 10px; border-radius: 5px; font-size: 14px; color: #333; border-left: 3px solid #8e44ad;">
-                                    ${shortText}
-                                </div>
-                            </div>
-                            
-                            <div style="margin-bottom: 10px;">
-                                <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Номера (${mailing.Количество_СМС || 0} шт.):</div>
-                                <div style="background: white; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; color: #333; max-height: 100px; overflow-y: auto;">
-                                    ${mailing.Номера_телефонов || 'Нет номеров'}
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    // Открываем ссылки в новом окне (уже есть target="_blank")
+                    // Можно добавить отслеживание статистики, если нужно
                 });
-            }
-            
-            container.innerHTML = html;
-        }
-        
-        // ==================== ИСТОРИЯ ====================
-        function loadTransactions() {
-            const transactions = [
-                { type: 'deposit', amount: 25, currency: 'USDT', date: '2024-01-20 14:30' },
-                { type: 'payment', amount: 10, currency: 'USDT', date: '2024-01-19 11:15' },
-                { type: 'deposit', amount: 50, currency: 'TON', date: '2024-01-18 09:45' },
-                { type: 'payment', amount: 8.15, currency: 'TON', date: '2024-01-17 16:20' },
-                { type: 'deposit', amount: 100, currency: 'USDT', date: '2024-01-16 13:10' }
-            ];
-            
-            let html = '';
-            
-            transactions.forEach(transaction => {
-                const isDeposit = transaction.type === 'deposit';
-                const icon = isDeposit ? 'fa-arrow-down' : 'fa-arrow-up';
-                const colorClass = isDeposit ? 'deposit' : 'payment';
-                const sign = isDeposit ? '+' : '-';
-                
-                html += `
-                    <div class="history-item">
-                        <div class="history-type">
-                            <div class="history-icon ${colorClass}">
-                                <i class="fas ${icon}"></i>
-                            </div>
-                            <div class="history-details">
-                                <h4>${isDeposit ? 'Пополнение' : 'Оплата рассылки'}</h4>
-                                <p>${transaction.date}</p>
-                            </div>
-                        </div>
-                        <div class="history-amount">
-                            <div class="amount" style="color: ${isDeposit ? '#00c851' : '#ff4444'}">
-                                ${sign}${transaction.amount}
-                            </div>
-                            <div class="currency">${transaction.currency}</div>
-                        </div>
-                    </div>
-                `;
             });
             
-            elements.transactionsList.innerHTML = html || '<div class="loading"><p>Нет транзакций</p></div>';
-        }
+            // Добавляем эффект загрузки
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s, transform 0.5s';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+        });
     </script>
 </body>
 </html>
