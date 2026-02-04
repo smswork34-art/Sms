@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNUS ПРИЕМКА</title>
+    <title>VKIDSKAS ПРИЁМКА</title>
     <style>
         * {
             margin: 0;
@@ -13,36 +13,45 @@
         }
         
         :root {
-            --primary: #007AFF;
-            --primary-dark: #0056CC;
-            --primary-light: #66B3FF;
-            --secondary: #5AC8FA;
-            --accent: #64D2FF;
-            --success: #34C759;
-            --dark-bg: #000814;
-            --darker-bg: #00050A;
-            --card-bg: rgba(0, 40, 85, 0.3);
-            --glass: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --text-primary: #FFFFFF;
-            --text-secondary: rgba(255, 255, 255, 0.85);
-            --text-tertiary: rgba(255, 255, 255, 0.6);
-            --shadow-glow: 0 0 30px rgba(0, 122, 255, 0.4);
-            --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.3);
-            --gradient-primary: linear-gradient(135deg, #007AFF 0%, #5AC8FA 50%, #64D2FF 100%);
-            --gradient-bg: linear-gradient(135deg, #000814 0%, #001F3F 100%);
-            --border-radius-xl: 24px;
-            --border-radius-lg: 20px;
-            --border-radius-md: 16px;
-            --border-radius-sm: 12px;
-            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --primary: #FF375F;
+            --primary-dark: #D70040;
+            --primary-light: #FF6B8B;
+            --secondary: #FF2D55;
+            --accent: #FF6482;
+            --accent-dark: #FF375F;
+            --danger: #FF453A;
+            --warning: #FF9500;
+            --purple: #BF5AF2;
+            --pink: #FF6B8B;
+            --dark: #1C1C1E;
+            --darker: #000000;
+            --gray: #2C2C2E;
+            --light-gray: #3A3A3C;
+            --text: #FFFFFF;
+            --text-secondary: #8E8E93;
+            --text-tertiary: #636366;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 50px rgba(255, 55, 95, 0.4);
+            --gradient-primary: linear-gradient(135deg, #FF375F 0%, #FF6B8B 100%);
+            --gradient-accent: linear-gradient(135deg, #FF6482 0%, #FF2D55 100%);
+            --gradient-purple: linear-gradient(135deg, #BF5AF2 0%, #FF375F 100%);
+            --gradient-warning: linear-gradient(135deg, #FF9500 0%, #FFD60A 100%);
+            --gradient-pink: linear-gradient(135deg, #FF375F 0%, #FF6482 100%);
+            --radius-xl: 32px;
+            --radius-lg: 24px;
+            --radius-md: 18px;
+            --radius-sm: 12px;
+            --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --transition-fast: all 0.25s ease;
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            background: var(--darker-bg);
-            color: var(--text-primary);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--darker);
+            color: var(--text);
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -50,7 +59,6 @@
             align-items: center;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background: var(--gradient-bg);
         }
         
         .container {
@@ -58,384 +66,664 @@
             max-width: 430px;
             height: 100vh;
             max-height: 932px;
-            background: transparent;
+            background: var(--dark);
             overflow: hidden;
             position: relative;
+            border-radius: 0;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.8);
         }
         
-        /* Фоновые эффекты */
-        .bg-effects {
+        /* Cosmic Background Effects */
+        .cosmic-bg {
             position: absolute;
             width: 100%;
             height: 100%;
+            z-index: 1;
             overflow: hidden;
-            z-index: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 55, 95, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 139, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 100, 130, 0.05) 0%, transparent 50%);
         }
         
-        .blue-orbs {
+        .cosmic-star {
             position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .orb {
-            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary-light);
             border-radius: 50%;
-            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-            filter: blur(40px);
-            opacity: 0.2;
-            animation: float 15s infinite ease-in-out;
+            opacity: 0;
+            animation: star-twinkle 4s infinite ease-in-out;
         }
         
-        .orb:nth-child(1) {
+        .nebula {
+            position: absolute;
             width: 300px;
             height: 300px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+        }
+        
+        .nebula-1 {
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
             top: 10%;
             left: 10%;
-            animation-delay: 0s;
-            animation-duration: 20s;
+            animation: nebula-float 20s infinite ease-in-out;
         }
         
-        .orb:nth-child(2) {
-            width: 200px;
-            height: 200px;
-            top: 60%;
-            right: 10%;
-            animation-delay: 5s;
-            animation-duration: 25s;
-        }
-        
-        .orb:nth-child(3) {
-            width: 150px;
-            height: 150px;
+        .nebula-2 {
+            background: radial-gradient(circle, var(--pink) 0%, transparent 70%);
             bottom: 20%;
-            left: 20%;
-            animation-delay: 10s;
-            animation-duration: 18s;
+            right: 10%;
+            animation: nebula-float 25s infinite ease-in-out reverse;
         }
         
-        /* Loading Screen */
+        .nebula-3 {
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            top: 50%;
+            left: 70%;
+            animation: nebula-float 18s infinite ease-in-out;
+        }
+        
+        /* Magnificent Loading Screen */
         .loading-screen {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: var(--dark-bg);
+            background: rgba(0, 0, 0, 0.95);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 100;
-            overflow: hidden;
+            padding: 40px;
         }
         
-        .snus-image-container {
+        .cosmic-logo-container {
+            width: 240px;
+            height: 240px;
+            margin-bottom: 50px;
+            position: relative;
+            perspective: 1000px;
+        }
+        
+        .cosmic-logo {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: cosmic-rotate 20s infinite linear;
+        }
+        
+        .logo-orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 55, 95, 0.3);
+            animation: orbit-rotate 15s infinite linear;
+        }
+        
+        .logo-orbit:nth-child(1) {
+            width: 180px;
+            height: 180px;
+            animation-duration: 20s;
+            animation-direction: reverse;
+        }
+        
+        .logo-orbit:nth-child(2) {
+            width: 140px;
+            height: 140px;
+            animation-duration: 12s;
+            border-color: rgba(255, 107, 139, 0.4);
+        }
+        
+        .logo-orbit:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            animation-duration: 8s;
+            border-color: rgba(255, 100, 130, 0.3);
+        }
+        
+        .orbital-particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            filter: blur(1px);
+            box-shadow: 0 0 10px var(--primary-light);
+        }
+        
+        .logo-orbit:nth-child(2) .orbital-particle {
+            background: var(--pink);
+            box-shadow: 0 0 10px var(--pink);
+            width: 8px;
+            height: 8px;
+        }
+        
+        .logo-orbit:nth-child(3) .orbital-particle {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            width: 4px;
+            height: 4px;
+        }
+        
+        .central-logo {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+        
+        .central-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 30px rgba(255, 55, 95, 0.8));
+            animation: logo-pulse 3s infinite ease-in-out;
+        }
+        
+        .loading-title {
+            font-size: 56px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, 
+                #FF375F 0%, 
+                #FF6B8B 25%, 
+                #FF6482 50%, 
+                #FF2D55 75%, 
+                #FF375F 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 300% 300%;
+            animation: gradient-shift 4s infinite linear;
+            letter-spacing: -2px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .loading-title::after {
+            content: 'VKIDSKAS ПРИЁМКА';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            background: linear-gradient(135deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                transparent 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            z-index: -1;
+            filter: blur(2px);
+        }
+        
+        .loading-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 60px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            opacity: 0.8;
+            text-align: center;
+            position: relative;
+            animation: subtitle-glow 3s infinite ease-in-out;
+        }
+        
+        /* Circle Loading Progress */
+        .circle-progress-container {
             width: 200px;
             height: 200px;
             margin-bottom: 40px;
             position: relative;
         }
         
-        .snus-image {
+        .circle-progress-bg {
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            animation: float-snus 3s infinite ease-in-out;
-            filter: drop-shadow(0 0 20px rgba(0, 122, 255, 0.5));
-        }
-        
-        .floating-dots {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .dot {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
+            border: 3px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
-            filter: blur(1px);
-            opacity: 0;
-            animation: dot-float 3s infinite ease-in-out;
-        }
-        
-        .loading-title {
-            font-size: 36px;
-            font-weight: 900;
-            margin-bottom: 16px;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-        
-        .loading-subtitle {
-            font-size: 16px;
-            color: var(--text-secondary);
-            margin-bottom: 40px;
-            font-weight: 500;
-        }
-        
-        .loading-progress {
-            width: 280px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .loading-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--gradient-primary);
-            border-radius: 3px;
-            transition: width 0.3s ease;
             position: relative;
             overflow: hidden;
         }
         
-        .loading-bar::after {
-            content: '';
+        .circle-progress-fill {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, 
-                transparent, 
-                rgba(255, 255, 255, 0.4), 
-                transparent);
-            animation: loading-shine 2s infinite;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top: 3px solid var(--primary);
+            border-right: 3px solid var(--pink);
+            border-bottom: 3px solid var(--accent);
+            border-left: 3px solid var(--primary-light);
+            clip-path: inset(0 0 0 50%);
+            transform: rotate(0deg);
+            transition: transform 0.4s ease;
+            filter: drop-shadow(0 0 10px rgba(255, 55, 95, 0.5));
+        }
+        
+        .circle-progress-inner {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
         
         .loading-percentage {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-primary);
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--text);
             font-variant-numeric: tabular-nums;
-            text-shadow: 0 0 10px var(--primary-light);
+            text-shadow: 0 0 30px rgba(255, 55, 95, 0.8);
+            margin-bottom: 8px;
+            animation: percentage-pulse 1s infinite ease-in-out;
         }
         
-        /* Main Menu */
-        .main-menu {
+        .loading-status {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .loading-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .loading-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            filter: blur(1px);
+            opacity: 0;
+            animation: loading-particle 3s infinite ease-in-out;
+        }
+        
+        /* Main Content */
+        .main-content {
             height: 100%;
             display: none;
             position: relative;
             z-index: 10;
-            padding: 24px;
+            padding: 0;
             overflow-y: auto;
             opacity: 0;
-            transition: opacity 0.6s ease;
+            transition: opacity 0.8s ease;
         }
         
-        .main-menu::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .main-menu::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
-        }
-        
-        .main-menu::-webkit-scrollbar-thumb {
-            background: var(--gradient-primary);
-            border-radius: 3px;
-        }
-        
-        /* Header */
-        .header {
-            padding: 40px 0 30px;
-            text-align: center;
+        /* Futuristic Header */
+        .app-header {
+            padding: 70px 32px 40px;
+            background: linear-gradient(180deg, 
+                rgba(0, 0, 0, 0.8) 0%, 
+                transparent 100%);
             position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .logo-container {
-            width: 80px;
-            height: 80px;
-            background: var(--gradient-primary);
-            border-radius: 20px;
-            margin: 0 auto 20px;
+        .header-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 300px;
+            background: 
+                radial-gradient(ellipse at top, rgba(255, 55, 95, 0.2) 0%, transparent 70%),
+                radial-gradient(ellipse at center, rgba(255, 100, 130, 0.1) 0%, transparent 60%);
+            z-index: -1;
+        }
+        
+        .header-logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            box-shadow: var(--shadow-glow);
-            transform: translateY(0);
+            position: relative;
+        }
+        
+        .header-logo img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 20px rgba(255, 55, 95, 0.5));
             animation: logo-float 3s infinite ease-in-out;
         }
         
-        .logo-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
-        }
-        
-        .title {
-            font-size: 32px;
+        .app-title {
+            font-size: 48px;
             font-weight: 900;
-            margin-bottom: 8px;
+            text-align: center;
+            margin-bottom: 12px;
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-        
-        .subtitle {
-            font-size: 15px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        /* Status Card */
-        .status-card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius-lg);
-            padding: 20px;
-            margin-bottom: 24px;
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(20px);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .status-indicator {
-            width: 12px;
-            height: 12px;
-            background: var(--success);
-            border-radius: 50%;
+            letter-spacing: -2px;
             position: relative;
-            box-shadow: 0 0 20px var(--success);
-            animation: status-pulse 2s infinite;
         }
         
-        .status-text {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-            flex: 1;
+        .app-title::after {
+            content: 'VKIDSKAS ПРИЁМКА';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            background: linear-gradient(135deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.1) 50%, 
+                transparent 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            z-index: -1;
+            filter: blur(4px);
         }
         
-        .status-value {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--success);
+        .app-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.8;
         }
         
-        /* Cards Grid */
-        .cards-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 24px;
+        /* Content Area */
+        .content {
+            padding: 0 28px 28px;
         }
         
-        .menu-card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius-lg);
+        /* Status Panel */
+        .status-panel {
+            background: linear-gradient(145deg, 
+                rgba(40, 40, 42, 0.8), 
+                rgba(28, 28, 30, 0.8));
+            border-radius: var(--radius-lg);
             padding: 22px;
-            border: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             position: relative;
             overflow: hidden;
+            transition: var(--transition-smooth);
         }
         
-        .menu-card::before {
+        .status-panel:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-glow);
+            border-color: var(--primary-light);
+        }
+        
+        .status-panel::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 1px;
+            height: 3px;
             background: var(--gradient-primary);
-            opacity: 0;
-            transition: var(--transition-smooth);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         }
         
-        .menu-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary-light);
-            box-shadow: var(--shadow-glow);
+        .status-grid {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 16px;
         }
         
-        .menu-card:hover::before {
-            opacity: 1;
-        }
-        
-        .card-icon {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius-md);
+        .status-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-pink);
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            transition: var(--transition-smooth);
+            animation: status-icon-pulse 3s infinite ease-in-out;
         }
         
-        .menu-card:hover .card-icon {
-            background: var(--gradient-primary);
-            transform: scale(1.1) rotate(5deg);
+        .status-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
         
-        .card-content {
-            flex: 1;
-        }
-        
-        .card-title {
+        .status-title {
             font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: var(--text-primary);
-            transition: var(--transition-smooth);
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.5px;
         }
         
-        .menu-card:hover .card-title {
-            color: var(--primary-light);
+        .status-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
         }
         
-        .card-desc {
+        .status-tag {
+            padding: 8px 16px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-sm);
             font-size: 14px;
-            color: var(--text-tertiary);
-            line-height: 1.4;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(255, 55, 95, 0.3);
         }
         
-        .card-arrow {
-            width: 24px;
-            height: 24px;
-            color: var(--text-tertiary);
-            transition: var(--transition-smooth);
+        /* Action Grid */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 32px;
         }
         
-        .menu-card:hover .card-arrow {
-            color: var(--primary);
-            transform: translateX(4px);
-        }
-        
-        /* Info Banner */
-        .info-banner {
-            background: var(--card-bg);
-            border-radius: var(--border-radius-lg);
+        .action-tile {
+            background: linear-gradient(145deg, 
+                rgba(44, 44, 46, 0.8), 
+                rgba(28, 28, 30, 0.8));
+            border-radius: var(--radius-lg);
             padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid var(--glass-border);
-            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
+            cursor: pointer;
+            transition: var(--transition-smooth);
             position: relative;
             overflow: hidden;
         }
         
-        .info-banner::before {
+        .action-tile::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, 
+                transparent 30%, 
+                rgba(255, 255, 255, 0.05) 50%, 
+                transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .action-tile:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(255, 55, 95, 0.3);
+            border-color: var(--primary-light);
+        }
+        
+        .action-tile:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .tile-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--glass);
+            border-radius: var(--radius-md);
+            margin: 0 auto 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+        
+        .action-tile:hover .tile-icon {
+            background: var(--gradient-primary);
+            transform: scale(1.15) rotate(10deg);
+        }
+        
+        .tile-icon::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: var(--radius-md);
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
+        }
+        
+        .action-tile:hover .tile-icon::after {
+            opacity: 1;
+            filter: blur(10px);
+        }
+        
+        .tile-content {
+            text-align: center;
+        }
+        
+        .tile-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+            transition: var(--transition-fast);
+        }
+        
+        .action-tile:hover .tile-title {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .tile-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-bottom: 16px;
+            transition: var(--transition-fast);
+        }
+        
+        .action-tile:hover .tile-desc {
+            color: var(--text);
+        }
+        
+        .tile-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: var(--gradient-pink);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: var(--transition);
+        }
+        
+        .action-tile:hover .tile-badge {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Different colors for different tiles */
+        .action-tile:nth-child(1) .tile-icon {
+            background: rgba(255, 55, 95, 0.15);
+        }
+        
+        .action-tile:nth-child(2) .tile-icon {
+            background: rgba(255, 100, 130, 0.15);
+        }
+        
+        .action-tile:nth-child(3) .tile-icon {
+            background: rgba(255, 107, 139, 0.15);
+        }
+        
+        .action-tile:nth-child(4) .tile-icon {
+            background: rgba(255, 45, 85, 0.15);
+        }
+        
+        .action-tile:nth-child(1):hover .tile-icon {
+            background: var(--gradient-primary);
+        }
+        
+        .action-tile:nth-child(2):hover .tile-icon {
+            background: var(--gradient-pink);
+        }
+        
+        .action-tile:nth-child(3):hover .tile-icon {
+            background: var(--gradient-purple);
+        }
+        
+        .action-tile:nth-child(4):hover .tile-icon {
+            background: linear-gradient(135deg, #FF2D55 0%, #FF375F 100%);
+        }
+        
+        /* Info Panel */
+        .info-panel {
+            background: linear-gradient(145deg, 
+                rgba(255, 55, 95, 0.1), 
+                rgba(255, 100, 130, 0.05));
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 55, 95, 0.2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+        
+        .info-panel:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(255, 55, 95, 0.2);
+        }
+        
+        .info-panel::before {
             content: '';
             position: absolute;
             top: 0;
@@ -443,264 +731,369 @@
             right: 0;
             height: 2px;
             background: var(--gradient-primary);
+            animation: info-glow 3s infinite ease-in-out;
         }
         
         .info-title {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 800;
-            margin-bottom: 8px;
+            margin-bottom: 16px;
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
         
-        .info-subtitle {
-            font-size: 14px;
+        .info-text {
+            font-size: 15px;
             color: var(--text-secondary);
-            font-weight: 500;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        .info-highlight {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--gradient-pink);
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 30px rgba(255, 55, 95, 0.3);
+            animation: highlight-pulse 2s infinite ease-in-out;
         }
         
         /* Footer */
-        .footer {
-            padding: 20px;
+        .app-footer {
+            padding: 28px;
             text-align: center;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
         }
         
         .footer-text {
             font-size: 13px;
             color: var(--text-tertiary);
             font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Scrollbar */
+        .main-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .main-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 4px;
         }
         
         /* Animations */
-        @keyframes float {
+        @keyframes star-twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        @keyframes nebula-float {
             0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(20px, -20px) scale(1.1); }
+            33% { transform: translate(30px, -20px) scale(1.1); }
+            66% { transform: translate(-20px, 30px) scale(0.9); }
         }
         
-        @keyframes float-snus {
+        @keyframes cosmic-rotate {
+            0% { transform: rotateY(0deg) rotateX(5deg); }
+            100% { transform: rotateY(360deg) rotateX(5deg); }
+        }
+        
+        @keyframes orbit-rotate {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        @keyframes logo-pulse {
             0%, 100% { 
-                transform: translateY(0) rotate(0deg) scale(1);
-            }
-            33% { 
-                transform: translateY(-15px) rotate(5deg) scale(1.05);
-            }
-            66% { 
-                transform: translateY(-5px) rotate(-5deg) scale(0.98);
-            }
-        }
-        
-        @keyframes dot-float {
-            0% { 
-                opacity: 0;
-                transform: translate(0, 0) scale(0);
+                transform: translate(-50%, -50%) scale(1);
+                filter: drop-shadow(0 0 30px rgba(255, 55, 95, 0.8));
             }
             50% { 
-                opacity: 0.8;
-                transform: translate(var(--tx), var(--ty)) scale(1);
-            }
-            100% { 
-                opacity: 0;
-                transform: translate(calc(var(--tx) * 2), calc(var(--ty) * 2)) scale(0);
-            }
-        }
-        
-        @keyframes loading-shine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        
-        @keyframes status-pulse {
-            0%, 100% { 
-                opacity: 1;
-                box-shadow: 0 0 20px var(--success);
-            }
-            50% { 
-                opacity: 0.7;
-                box-shadow: 0 0 10px var(--success);
+                transform: translate(-50%, -50%) scale(1.1);
+                filter: drop-shadow(0 0 50px rgba(255, 55, 95, 1));
             }
         }
         
         @keyframes logo-float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
+            0%, 100% { 
+                transform: translateY(0);
+                filter: drop-shadow(0 4px 20px rgba(255, 55, 95, 0.5));
+            }
+            50% { 
+                transform: translateY(-10px);
+                filter: drop-shadow(0 10px 40px rgba(255, 55, 95, 0.7));
+            }
         }
         
-        /* Utility */
-        .hidden {
-            display: none;
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+        
+        @keyframes subtitle-glow {
+            0%, 100% { opacity: 0.6; text-shadow: 0 0 10px transparent; }
+            50% { opacity: 1; text-shadow: 0 0 20px rgba(255, 55, 95, 0.5); }
+        }
+        
+        @keyframes percentage-pulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 30px rgba(255, 55, 95, 0.8); }
+            50% { transform: scale(1.05); text-shadow: 0 0 50px rgba(255, 55, 95, 1); }
+        }
+        
+        @keyframes loading-particle {
+            0% { opacity: 0; transform: translateY(0) scale(0); }
+            50% { opacity: 1; transform: translateY(-100px) scale(1); }
+            100% { opacity: 0; transform: translateY(-200px) scale(0); }
+        }
+        
+        @keyframes status-icon-pulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 100, 130, 0.5);
+            }
+            50% { 
+                transform: scale(1.1);
+                box-shadow: 0 0 40px rgba(255, 100, 130, 0.8);
+            }
+        }
+        
+        @keyframes info-glow {
+            0%, 100% { 
+                opacity: 1;
+                box-shadow: 0 0 30px rgba(255, 55, 95, 0.7);
+            }
+            50% { 
+                opacity: 0.6;
+                box-shadow: 0 0 15px rgba(255, 55, 95, 0.4);
+            }
+        }
+        
+        @keyframes highlight-pulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 8px 30px rgba(255, 55, 95, 0.3);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 12px 40px rgba(255, 55, 95, 0.5);
+            }
         }
         
         /* Responsive */
         @media (max-height: 700px) {
-            .snus-image-container {
-                width: 150px;
-                height: 150px;
-                margin-bottom: 30px;
+            .cosmic-logo-container {
+                width: 180px;
+                height: 180px;
+                margin-bottom: 40px;
             }
             
             .loading-title {
-                font-size: 30px;
+                font-size: 44px;
             }
             
-            .cards-grid {
-                gap: 14px;
+            .circle-progress-container {
+                width: 160px;
+                height: 160px;
+                margin-bottom: 30px;
             }
             
-            .menu-card {
-                padding: 18px;
+            .circle-progress-inner {
+                width: 120px;
+                height: 120px;
+                top: 20px;
+                left: 20px;
             }
             
-            .logo-container {
-                width: 70px;
-                height: 70px;
+            .loading-percentage {
+                font-size: 36px;
+            }
+            
+            .app-header {
+                padding: 50px 24px 30px;
+            }
+            
+            .header-logo img {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .app-title {
+                font-size: 36px;
+            }
+            
+            .action-grid {
+                gap: 16px;
+            }
+        }
+        
+        @media (max-width: 380px) {
+            .action-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Background Effects -->
-        <div class="bg-effects">
-            <div class="blue-orbs">
-                <div class="orb"></div>
-                <div class="orb"></div>
-                <div class="orb"></div>
-            </div>
-        </div>
+        <!-- Cosmic Background -->
+        <div class="cosmic-bg" id="cosmicBg"></div>
         
-        <!-- Loading Screen -->
+        <!-- Magnificent Loading Screen -->
         <div class="loading-screen" id="loadingScreen">
-            <div class="snus-image-container">
-                <img src="icon.PNG" alt="Snus" class="snus-image">
-                <div class="floating-dots" id="floatingDots"></div>
+            <div class="cosmic-logo-container">
+                <div class="cosmic-logo">
+                    <div class="logo-orbit">
+                        <div class="orbital-particle"></div>
+                    </div>
+                    <div class="logo-orbit">
+                        <div class="orbital-particle"></div>
+                    </div>
+                    <div class="logo-orbit">
+                        <div class="orbital-particle"></div>
+                    </div>
+                    <div class="central-logo">
+                        <img src="icon.PNG" alt="VKIDSKAS">
+                    </div>
+                </div>
             </div>
             
-            <h1 class="loading-title">SNUS ПРИЕМКА</h1>
-            <div class="loading-subtitle" id="loadingText">ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ</div>
+            <h1 class="loading-title">VKIDSKAS ПРИЁМКА</h1>
+            <div class="loading-subtitle" id="loadingText">КОСМИЧЕСКАЯ ЗАГРУЗКА</div>
             
-            <div class="loading-progress">
-                <div class="loading-bar" id="progressBar"></div>
+            <div class="circle-progress-container">
+                <div class="circle-progress-bg">
+                    <div class="circle-progress-fill" id="progressFill"></div>
+                </div>
+                <div class="circle-progress-inner">
+                    <div class="loading-percentage" id="percentage">0%</div>
+                    <div class="loading-status" id="loadingStatus">ПОДКЛЮЧЕНИЕ</div>
+                </div>
+                <div class="loading-particles" id="loadingParticles"></div>
             </div>
-            
-            <div class="loading-percentage" id="percentage">0%</div>
         </div>
         
-        <!-- Main Menu -->
-        <div class="main-menu" id="mainMenu">
-            <!-- Header -->
-            <div class="header">
-                <div class="logo-container">
-                    <img src="icon.PNG" alt="Snus" class="logo-image">
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Futuristic Header -->
+            <div class="app-header">
+                <div class="header-glow"></div>
+                <div class="header-logo">
+                    <img src="icon.PNG" alt="VKIDSKAS">
                 </div>
-                <h1 class="title">SNUS ПРИЕМКА</h1>
-                <div class="subtitle">ПРОФЕССИОНАЛЬНЫЙ СЕРВИС</div>
+                <h1 class="app-title">VKIDSKAS ПРИЁМКА</h1>
+                <div class="app-subtitle">ПРЕМИУМ СЕРВИС КОСМИЧЕСКОГО УРОВНЯ</div>
             </div>
             
-            <!-- Status Card -->
-            <div class="status-card">
-                <div class="status-indicator"></div>
-                <div class="status-text">СИСТЕМА АКТИВНА</div>
-                <div class="status-value">24/7</div>
-            </div>
-            
-            <!-- Cards Grid -->
-            <div class="cards-grid">
-                <div class="menu-card" onclick="openLink('https://t.me/snus_priemka_main')">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" 
-                                  fill="currentColor"/>
-                            <path d="M7 9H17" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M7 13H13" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-title">ОСНОВНОЙ ЧАТ</div>
-                        <div class="card-desc">Общение, покупка/продажа, гарант-сервис</div>
-                    </div>
-                    <div class="card-arrow">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" 
-                                  stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+            <!-- Content -->
+            <div class="content">
+                <!-- Status Panel -->
+                <div class="status-panel">
+                    <div class="status-grid">
+                        <div class="status-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" fill="white"/>
+                                <path d="M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#FF6482"/>
+                            </svg>
+                        </div>
+                        <div class="status-info">
+                            <div class="status-title">СИСТЕМА АКТИВИРОВАНА</div>
+                            <div class="status-desc">Все модули работают в оптимальном режиме</div>
+                        </div>
+                        <div class="status-tag">24/7</div>
                     </div>
                 </div>
                 
-                <div class="menu-card" onclick="openLink('https://t.me/snus_priemka_orders')">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <rect x="4" y="4" width="16" height="16" rx="4" fill="currentColor"/>
-                            <path d="M8 12H16" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M12 8V16" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
+                <!-- Action Grid -->
+                <div class="action-grid">
+                    <div class="action-tile" onclick="openLink('https://t.me/vkidskas_main')">
+                        <div class="tile-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
+                                <path d="M7 9H17" stroke="#FF375F" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M7 13H13" stroke="#FF375F" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="tile-content">
+                            <div class="tile-title">ГЛАВНЫЙ ЧАТ</div>
+                            <div class="tile-desc">Общение и сделки</div>
+                            <div class="tile-badge">Live</div>
+                        </div>
                     </div>
-                    <div class="card-content">
-                        <div class="card-title">ПРИЕМКА SNUS</div>
-                        <div class="card-desc">Выкуп снюса по максимальным ценам</div>
+                    
+                    <div class="action-tile" onclick="openLink('https://t.me/vkidskas_orders')">
+                        <div class="tile-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                <rect x="4" y="4" width="16" height="16" rx="4" fill="white"/>
+                                <path d="M8 12H16" stroke="#FF6482" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M12 8V16" stroke="#FF6482" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="tile-content">
+                            <div class="tile-title">ПРИЁМКА</div>
+                            <div class="tile-desc">Максимальные цены</div>
+                            <div class="tile-badge">Hot</div>
+                        </div>
                     </div>
-                    <div class="card-arrow">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" 
-                                  stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                    
+                    <div class="action-tile" onclick="openLink('https://t.me/vkidskas_support')">
+                        <div class="tile-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" fill="white"/>
+                                <circle cx="12" cy="9" r="1" fill="#FF6B8B"/>
+                                <path d="M12 13V17" stroke="#FF6B8B" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="tile-content">
+                            <div class="tile-title">ПОДДЕРЖКА</div>
+                            <div class="tile-desc">Техпомощь онлайн</div>
+                            <div class="tile-badge">24h</div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-tile" onclick="openLink('https://t.me/vkidskas_news')">
+                        <div class="tile-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                <path d="M19 4H5C3.9 4 3 4.9 3 6V18C3 19.1 3.9 20 5 20H19C20.1 20 21 19.1 21 18V6C21 4.9 20.1 4 19 4Z" fill="white"/>
+                                <rect x="7" y="8" width="10" height="2" fill="#FF2D55"/>
+                                <rect x="7" y="12" width="10" height="2" fill="#FF2D55"/>
+                                <rect x="7" y="16" width="6" height="2" fill="#FF2D55"/>
+                            </svg>
+                        </div>
+                        <div class="tile-content">
+                            <div class="tile-title">НОВОСТИ</div>
+                            <div class="tile-desc">Актуальные анонсы</div>
+                            <div class="tile-badge">New</div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="menu-card" onclick="openLink('https://t.me/snus_priemka_support')">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="10" fill="currentColor"/>
-                            <circle cx="12" cy="9" r="1" fill="white"/>
-                            <path d="M12 13V17" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
+                <!-- Info Panel -->
+                <div class="info-panel">
+                    <div class="info-title">ПРЕМИУМ СЕРВИС</div>
+                    <div class="info-text">
+                        Быстрая и безопасная приемка товаров. Максимальные цены и моментальные выплаты. Работаем 24/7 без выходных.
                     </div>
-                    <div class="card-content">
-                        <div class="card-title">ПОДДЕРЖКА</div>
-                        <div class="card-desc">Техническая помощь и консультации</div>
-                    </div>
-                    <div class="card-arrow">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" 
-                                  stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
+                    <div class="info-highlight">ТОП НА РЫНКЕ</div>
                 </div>
-                
-                <div class="menu-card" onclick="openLink('https://t.me/snus_priemka_news')">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M19 4H5C3.9 4 3 4.9 3 6V18C3 19.1 3.9 20 5 20H19C20.1 20 21 19.1 21 18V6C21 4.9 20.1 4 19 4Z" 
-                                  fill="currentColor"/>
-                            <rect x="7" y="8" width="10" height="2" fill="white"/>
-                            <rect x="7" y="12" width="10" height="2" fill="white"/>
-                            <rect x="7" y="16" width="6" height="2" fill="white"/>
-                        </svg>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-title">НОВОСТИ</div>
-                        <div class="card-desc">Актуальные обновления и анонсы</div>
-                    </div>
-                    <div class="card-arrow">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" 
-                                  stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Info Banner -->
-            <div class="info-banner">
-                <div class="info-title">РАБОТАЕМ 24/7</div>
-                <div class="info-subtitle">БЫСТРО • НАДЁЖНО • КОНФИДЕНЦИАЛЬНО</div>
             </div>
             
             <!-- Footer -->
-            <div class="footer">
-                <div class="footer-text">© 2024 SNUS ПРИЕМКА</div>
+            <div class="app-footer">
+                <div class="footer-text">© 2024 VKIDSKAS ПРИЁМКА | КОСМИЧЕСКИЙ СЕРВИС</div>
             </div>
         </div>
     </div>
@@ -708,23 +1101,48 @@
     <script>
         // Элементы DOM
         const loadingScreen = document.getElementById('loadingScreen');
-        const mainMenu = document.getElementById('mainMenu');
+        const mainContent = document.getElementById('mainContent');
         const loadingText = document.getElementById('loadingText');
-        const progressBar = document.getElementById('progressBar');
+        const loadingStatus = document.getElementById('loadingStatus');
         const percentage = document.getElementById('percentage');
-        const floatingDots = document.getElementById('floatingDots');
+        const progressFill = document.getElementById('progressFill');
+        const cosmicBg = document.getElementById('cosmicBg');
+        const loadingParticles = document.getElementById('loadingParticles');
         
-        // Функция открытия ссылок
+        // Функция открытия ссылок с космической анимацией
         function openLink(url) {
-            const card = event.currentTarget;
+            const tile = event.currentTarget;
             
-            // Анимация нажатия
-            card.style.transform = 'translateY(-6px) scale(1.02)';
-            card.style.boxShadow = '0 0 40px rgba(0, 122, 255, 0.6)';
+            // Эффект нажатия с пульсацией
+            tile.style.transform = 'translateY(-12px) scale(1.05)';
+            tile.style.boxShadow = '0 30px 80px rgba(255, 55, 95, 0.6)';
+            
+            // Анимация иконки
+            const icon = tile.querySelector('.tile-icon');
+            icon.style.transform = 'scale(1.3) rotate(20deg)';
+            
+            // Космический ripple эффект
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.width = '100%';
+            ripple.style.height = '100%';
+            ripple.style.borderRadius = 'var(--radius-lg)';
+            ripple.style.background = 'radial-gradient(circle, rgba(255, 55, 95, 0.4), transparent 70%)';
+            ripple.style.animation = 'cosmic-ripple 0.8s ease-out forwards';
+            tile.appendChild(ripple);
+            
+            // Звуковой эффект (опционально)
+            if (typeof Audio !== 'undefined') {
+                const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ');
+                audio.volume = 0.3;
+                audio.play().catch(() => {});
+            }
             
             setTimeout(() => {
-                card.style.transform = 'translateY(-4px)';
-                card.style.boxShadow = 'var(--shadow-glow)';
+                tile.style.transform = 'translateY(-8px) scale(1.02)';
+                tile.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 55, 95, 0.3)';
+                icon.style.transform = 'scale(1.15) rotate(10deg)';
+                ripple.remove();
                 
                 // Открытие ссылки
                 setTimeout(() => {
@@ -733,54 +1151,75 @@
                     } else {
                         window.open(url, '_blank');
                     }
-                }, 200);
-            }, 200);
+                }, 400);
+            }, 300);
         }
         
-        // Создание плавающих точек
-        function createFloatingDots() {
-            for (let i = 0; i < 15; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'dot';
-                
-                // Случайные параметры для анимации
-                const tx = Math.random() * 100 - 50;
-                const ty = Math.random() * 100 - 50;
-                const delay = Math.random() * 3;
-                const duration = 2 + Math.random() * 2;
-                
-                dot.style.setProperty('--tx', `${tx}px`);
-                dot.style.setProperty('--ty', `${ty}px`);
-                dot.style.animationDelay = `${delay}s`;
-                dot.style.animationDuration = `${duration}s`;
-                dot.style.left = `${Math.random() * 100}%`;
-                dot.style.top = `${Math.random() * 100}%`;
-                
-                floatingDots.appendChild(dot);
+        // Создание космического фона
+        function createCosmicBackground() {
+            // Создаем звезды
+            for (let i = 0; i < 60; i++) {
+                const star = document.createElement('div');
+                star.className = 'cosmic-star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 4}s`;
+                star.style.animationDuration = `${2 + Math.random() * 4}s`;
+                star.style.width = `${1 + Math.random() * 2}px`;
+                star.style.height = star.style.width;
+                star.style.background = Math.random() > 0.5 ? 'var(--primary-light)' : 'var(--pink)';
+                cosmicBg.appendChild(star);
+            }
+            
+            // Создаем туманности
+            const nebulae = ['nebula-1', 'nebula-2', 'nebula-3'];
+            nebulae.forEach(className => {
+                const nebula = document.createElement('div');
+                nebula.className = `nebula ${className}`;
+                cosmicBg.appendChild(nebula);
+            });
+        }
+        
+        // Создание частиц загрузки
+        function createLoadingParticles() {
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'loading-particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${100 + Math.random() * 50}%`;
+                particle.style.animationDelay = `${Math.random() * 3}s`;
+                particle.style.animationDuration = `${2 + Math.random() * 2}s`;
+                particle.style.width = `${2 + Math.random() * 4}px`;
+                particle.style.height = particle.style.width;
+                particle.style.background = Math.random() > 0.5 ? 'var(--primary-light)' : 'var(--accent)';
+                loadingParticles.appendChild(particle);
             }
         }
         
-        // Симуляция загрузки
+        // Анимированная загрузка с кругом
         let progress = 0;
         const loadingPhrases = [
-            "ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ...",
-            "ПОДКЛЮЧЕНИЕ К СЕТИ...", 
-            "ЗАГРУЗКА ДАННЫХ...",
-            "ФИНАЛЬНАЯ НАСТРОЙКА...",
-            "ГОТОВО!"
+            { text: "АКТИВАЦИЯ ЯДРА СИСТЕМЫ", status: "ИНИЦИАЛИЗАЦИЯ" },
+            { text: "ПОДКЛЮЧЕНИЕ К МЕЖГАЛАКТИЧЕСКОЙ СЕТИ", status: "СИНХРОНИЗАЦИЯ" },
+            { text: "ЗАГРУЗКА КВАНТОВЫХ ДАННЫХ", status: "ОБРАБОТКА" },
+            { text: "НАСТРОЙКА ГИПЕРПРОСТРАНСТВЕННЫХ КАНАЛОВ", status: "КОНФИГУРАЦИЯ" },
+            { text: "СИСТЕМА ГОТОВА К РАБОТЕ", status: "ГОТОВО" }
         ];
         
         function simulateLoading() {
             const interval = setInterval(() => {
+                // Динамическое изменение скорости
                 let increment;
-                if (progress < 20) {
-                    increment = 0.8;
-                } else if (progress < 60) {
-                    increment = 1.5;
+                if (progress < 15) {
+                    increment = 0.5; // Медленный старт
+                } else if (progress < 40) {
+                    increment = 1.2; // Быстрая загрузка
+                } else if (progress < 70) {
+                    increment = 0.8; // Средняя скорость
                 } else if (progress < 90) {
-                    increment = 0.6;
+                    increment = 0.4; // Замедление
                 } else {
-                    increment = 0.3;
+                    increment = 0.2; // Очень медленно к 100%
                 }
                 
                 progress += increment;
@@ -789,76 +1228,137 @@
                     progress = 100;
                     clearInterval(interval);
                     
-                    // Обновление текста
-                    loadingText.textContent = loadingPhrases[4];
+                    // Финальная анимация
+                    loadingText.textContent = loadingPhrases[4].text;
+                    loadingStatus.textContent = loadingPhrases[4].status;
+                    animateTextChange();
                     
-                    // Завершение загрузки
-                    setTimeout(() => completeLoading(), 800);
+                    // Анимация завершения
+                    setTimeout(() => {
+                        loadingScreen.classList.add('complete');
+                        setTimeout(() => completeLoading(), 1000);
+                    }, 800);
                 }
                 
-                // Обновление UI
+                // Обновление круглого прогресса
                 percentage.textContent = `${Math.floor(progress)}%`;
-                progressBar.style.width = `${progress}%`;
+                progressFill.style.transform = `rotate(${progress * 3.6}deg)`;
                 
-                // Обновление текста загрузки
-                if (progress < 20 && loadingText.textContent !== loadingPhrases[0]) {
-                    loadingText.textContent = loadingPhrases[0];
-                } else if (progress >= 20 && progress < 40 && loadingText.textContent !== loadingPhrases[1]) {
-                    loadingText.textContent = loadingPhrases[1];
-                } else if (progress >= 40 && progress < 70 && loadingText.textContent !== loadingPhrases[2]) {
-                    loadingText.textContent = loadingPhrases[2];
-                } else if (progress >= 70 && progress < 95 && loadingText.textContent !== loadingPhrases[3]) {
-                    loadingText.textContent = loadingPhrases[3];
+                // Пульсация процента
+                if (Math.floor(progress) % 5 === 0) {
+                    percentage.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        percentage.style.transform = 'scale(1)';
+                    }, 100);
                 }
-            }, 40);
+                
+                // Обновление текста и статуса
+                if (progress < 20 && loadingText.textContent !== loadingPhrases[0].text) {
+                    loadingText.textContent = loadingPhrases[0].text;
+                    loadingStatus.textContent = loadingPhrases[0].status;
+                    animateTextChange();
+                } else if (progress >= 20 && progress < 40 && loadingText.textContent !== loadingPhrases[1].text) {
+                    loadingText.textContent = loadingPhrases[1].text;
+                    loadingStatus.textContent = loadingPhrases[1].status;
+                    animateTextChange();
+                } else if (progress >= 40 && progress < 60 && loadingText.textContent !== loadingPhrases[2].text) {
+                    loadingText.textContent = loadingPhrases[2].text;
+                    loadingStatus.textContent = loadingPhrases[2].status;
+                    animateTextChange();
+                } else if (progress >= 60 && progress < 85 && loadingText.textContent !== loadingPhrases[3].text) {
+                    loadingText.textContent = loadingPhrases[3].text;
+                    loadingStatus.textContent = loadingPhrases[3].status;
+                    animateTextChange();
+                }
+            }, 50);
         }
         
-        // Завершение загрузки
+        // Анимация изменения текста
+        function animateTextChange() {
+            loadingText.style.opacity = '0';
+            loadingText.style.transform = 'translateY(20px)';
+            loadingStatus.style.opacity = '0';
+            loadingStatus.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                loadingText.style.opacity = '1';
+                loadingText.style.transform = 'translateY(0)';
+                loadingStatus.style.opacity = '1';
+                loadingStatus.style.transform = 'translateY(0)';
+            }, 150);
+        }
+        
+        // Завершение загрузки с эпичными эффектами
         function completeLoading() {
-            // Плавное исчезновение экрана загрузки
+            // Эпичное исчезновение
             loadingScreen.style.opacity = '0';
-            loadingScreen.style.transform = 'scale(1.1)';
+            loadingScreen.style.transform = 'scale(1.2) rotate(5deg)';
+            loadingScreen.style.filter = 'blur(20px)';
             
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 
-                // Показ основного меню
-                mainMenu.style.display = 'block';
+                // Появление основного контента
+                mainContent.style.display = 'block';
                 
-                // Плавное появление
+                // Эпичное появление
                 setTimeout(() => {
-                    mainMenu.style.opacity = '1';
+                    mainContent.style.opacity = '1';
                     
-                    // Анимация появления карточек
-                    const cards = document.querySelectorAll('.menu-card');
-                    cards.forEach((card, index) => {
-                        card.style.opacity = '0';
-                        card.style.transform = 'translateY(20px)';
-                        card.style.transition = `all 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1 + 0.2}s`;
-                        
-                        setTimeout(() => {
-                            card.style.opacity = '1';
-                            card.style.transform = 'translateY(0)';
-                        }, 50);
-                    });
-                }, 50);
-            }, 500);
+                    // Анимация появления элементов
+                    animateContentAppearance();
+                }, 100);
+            }, 600);
+        }
+        
+        // Анимация появления элементов контента
+        function animateContentAppearance() {
+            const elements = [
+                document.querySelector('.status-panel'),
+                ...document.querySelectorAll('.action-tile'),
+                document.querySelector('.info-panel')
+            ];
+            
+            elements.forEach((element, index) => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(40px) scale(0.9)';
+                element.style.filter = 'blur(10px)';
+                element.style.transition = `all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 0.15 + 0.3}s`;
+                
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0) scale(1)';
+                    element.style.filter = 'blur(0)';
+                }, 100);
+            });
         }
         
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', () => {
-            // Создание плавающих точек
-            createFloatingDots();
+            // Создание космических эффектов
+            createCosmicBackground();
+            createLoadingParticles();
             
-            // Запуск загрузки
-            setTimeout(simulateLoading, 500);
+            // Добавляем стиль для ripple эффекта
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes cosmic-ripple {
+                    0% { opacity: 0; transform: scale(0.5); }
+                    50% { opacity: 0.6; transform: scale(1.2); }
+                    100% { opacity: 0; transform: scale(1.5); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Запуск эпичной загрузки
+            setTimeout(simulateLoading, 1000);
             
             // Инициализация Telegram WebApp
             if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
                 Telegram.WebApp.ready();
                 Telegram.WebApp.expand();
-                Telegram.WebApp.setBackgroundColor('#000814');
-                Telegram.WebApp.setHeaderColor('#000814');
+                Telegram.WebApp.setBackgroundColor('#000000');
+                Telegram.WebApp.setHeaderColor('#000000');
                 
                 // Кнопка "Назад"
                 Telegram.WebApp.BackButton.show();
