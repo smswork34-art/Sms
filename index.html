@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VKIDSKAS ПРИЁМКА</title>
+    <title>VKIDSKAS SNUS</title>
     <style>
         * {
             margin: 0;
@@ -13,16 +13,16 @@
         }
         
         :root {
-            --primary: #FF375F;
-            --primary-dark: #D70040;
-            --primary-light: #FF6B8B;
-            --secondary: #FF2D55;
-            --accent: #FF6482;
-            --accent-dark: #FF375F;
-            --danger: #FF453A;
+            --primary: #FF6B35;
+            --primary-dark: #E55A2B;
+            --primary-light: #FF8E5C;
+            --secondary: #FF5A2D;
+            --accent: #FF7A45;
+            --accent-dark: #FF6B35;
+            --danger: #FF6B35;
             --warning: #FF9500;
-            --purple: #BF5AF2;
-            --pink: #FF6B8B;
+            --purple: #FF8E5C;
+            --pink: #FF7A45;
             --dark: #1C1C1E;
             --darker: #000000;
             --gray: #2C2C2E;
@@ -30,15 +30,15 @@
             --text: #FFFFFF;
             --text-secondary: #8E8E93;
             --text-tertiary: #636366;
-            --glass: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass: rgba(255, 107, 53, 0.08);
+            --glass-border: rgba(255, 107, 53, 0.12);
             --shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-            --shadow-glow: 0 0 50px rgba(255, 55, 95, 0.4);
-            --gradient-primary: linear-gradient(135deg, #FF375F 0%, #FF6B8B 100%);
-            --gradient-accent: linear-gradient(135deg, #FF6482 0%, #FF2D55 100%);
-            --gradient-purple: linear-gradient(135deg, #BF5AF2 0%, #FF375F 100%);
-            --gradient-warning: linear-gradient(135deg, #FF9500 0%, #FFD60A 100%);
-            --gradient-pink: linear-gradient(135deg, #FF375F 0%, #FF6482 100%);
+            --shadow-glow: 0 0 50px rgba(255, 107, 53, 0.4);
+            --gradient-primary: linear-gradient(135deg, #FF6B35 0%, #FF8E5C 100%);
+            --gradient-accent: linear-gradient(135deg, #FF7A45 0%, #FF5A2D 100%);
+            --gradient-purple: linear-gradient(135deg, #FF8E5C 0%, #FF6B35 100%);
+            --gradient-warning: linear-gradient(135deg, #FF9500 0%, #FFB74D 100%);
+            --gradient-pink: linear-gradient(135deg, #FF6B35 0%, #FF7A45 100%);
             --radius-xl: 32px;
             --radius-lg: 24px;
             --radius-md: 18px;
@@ -81,9 +81,9 @@
             z-index: 1;
             overflow: hidden;
             background: 
-                radial-gradient(circle at 20% 80%, rgba(255, 55, 95, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 107, 139, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(255, 100, 130, 0.05) 0%, transparent 50%);
+                radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 142, 92, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 122, 69, 0.05) 0%, transparent 50%);
         }
         
         .cosmic-star {
@@ -126,6 +126,90 @@
             animation: nebula-float 18s infinite ease-in-out;
         }
         
+        /* Pack decorations */
+        .snus-pack {
+            position: absolute;
+            z-index: 2;
+            opacity: 0.15;
+            filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.3));
+            transition: all 0.5s ease;
+        }
+        
+        .snus-pack:hover {
+            opacity: 0.25;
+            transform: scale(1.05);
+        }
+        
+        .pack-1 {
+            width: 120px;
+            height: 120px;
+            top: 15%;
+            left: 5%;
+            transform: rotate(-15deg);
+        }
+        
+        .pack-2 {
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            right: 8%;
+            transform: rotate(20deg);
+        }
+        
+        .pack-3 {
+            width: 80px;
+            height: 80px;
+            top: 25%;
+            right: 10%;
+            transform: rotate(-10deg);
+        }
+        
+        .pack-4 {
+            width: 90px;
+            height: 90px;
+            bottom: 30%;
+            left: 8%;
+            transform: rotate(15deg);
+        }
+        
+        /* Icon decorations */
+        .snus-icon {
+            position: absolute;
+            z-index: 2;
+            opacity: 0.1;
+            filter: drop-shadow(0 0 15px rgba(255, 107, 53, 0.2));
+            transition: all 0.5s ease;
+        }
+        
+        .snus-icon:hover {
+            opacity: 0.2;
+            transform: scale(1.1);
+        }
+        
+        .icon-1 {
+            width: 60px;
+            height: 60px;
+            top: 65%;
+            left: 5%;
+            transform: rotate(-5deg);
+        }
+        
+        .icon-2 {
+            width: 50px;
+            height: 50px;
+            top: 10%;
+            right: 15%;
+            transform: rotate(10deg);
+        }
+        
+        .icon-3 {
+            width: 70px;
+            height: 70px;
+            bottom: 15%;
+            left: 15%;
+            transform: rotate(-8deg);
+        }
+        
         /* Magnificent Loading Screen */
         .loading-screen {
             position: absolute;
@@ -163,7 +247,7 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 0 30px rgba(255, 55, 95, 0.8));
+            filter: drop-shadow(0 0 30px rgba(255, 107, 53, 0.8));
             animation: logo-float 3s infinite ease-in-out;
         }
         
@@ -172,11 +256,11 @@
             font-weight: 900;
             margin-bottom: 20px;
             background: linear-gradient(135deg, 
-                #FF375F 0%, 
-                #FF6B8B 25%, 
-                #FF6482 50%, 
-                #FF2D55 75%, 
-                #FF375F 100%);
+                #FF6B35 0%, 
+                #FF8E5C 25%, 
+                #FF7A45 50%, 
+                #FF5A2D 75%, 
+                #FF6B35 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-size: 300% 300%;
@@ -187,7 +271,7 @@
         }
         
         .loading-title::after {
-            content: 'VKIDSKAS ПРИЁМКА';
+            content: 'VKIDSKAS SNUS';
             position: absolute;
             top: 2px;
             left: 2px;
@@ -244,7 +328,7 @@
             clip-path: inset(0 0 0 50%);
             transform: rotate(0deg);
             transition: transform 0.4s ease;
-            filter: drop-shadow(0 0 10px rgba(255, 55, 95, 0.5));
+            filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.5));
         }
         
         .circle-progress-inner {
@@ -266,7 +350,7 @@
             font-weight: 900;
             color: var(--text);
             font-variant-numeric: tabular-nums;
-            text-shadow: 0 0 30px rgba(255, 55, 95, 0.8);
+            text-shadow: 0 0 30px rgba(255, 107, 53, 0.8);
             margin-bottom: 8px;
             animation: percentage-pulse 1s infinite ease-in-out;
         }
@@ -326,8 +410,8 @@
             right: 0;
             height: 300px;
             background: 
-                radial-gradient(ellipse at top, rgba(255, 55, 95, 0.2) 0%, transparent 70%),
-                radial-gradient(ellipse at center, rgba(255, 100, 130, 0.1) 0%, transparent 60%);
+                radial-gradient(ellipse at top, rgba(255, 107, 53, 0.2) 0%, transparent 70%),
+                radial-gradient(ellipse at center, rgba(255, 122, 69, 0.1) 0%, transparent 60%);
             z-index: -1;
         }
         
@@ -345,7 +429,7 @@
             width: 100px;
             height: 100px;
             object-fit: contain;
-            filter: drop-shadow(0 4px 20px rgba(255, 55, 95, 0.5));
+            filter: drop-shadow(0 4px 20px rgba(255, 107, 53, 0.5));
             animation: logo-float 3s infinite ease-in-out;
         }
         
@@ -362,7 +446,7 @@
         }
         
         .app-title::after {
-            content: 'VKIDSKAS ПРИЁМКА';
+            content: 'VKIDSKAS SNUS';
             position: absolute;
             top: 2px;
             left: 2px;
@@ -469,7 +553,7 @@
             color: white;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 4px 20px rgba(255, 55, 95, 0.3);
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
         }
         
         /* Action Grid */
@@ -510,7 +594,7 @@
             transform: translateY(-8px) scale(1.02);
             box-shadow: 
                 0 20px 60px rgba(0, 0, 0, 0.4),
-                0 0 40px rgba(255, 55, 95, 0.3);
+                0 0 40px rgba(255, 107, 53, 0.3);
             border-color: var(--primary-light);
         }
         
@@ -605,19 +689,19 @@
         
         /* Different colors for different tiles */
         .action-tile:nth-child(1) .tile-icon {
-            background: rgba(255, 55, 95, 0.15);
+            background: rgba(255, 107, 53, 0.15);
         }
         
         .action-tile:nth-child(2) .tile-icon {
-            background: rgba(255, 100, 130, 0.15);
+            background: rgba(255, 122, 69, 0.15);
         }
         
         .action-tile:nth-child(3) .tile-icon {
-            background: rgba(255, 107, 139, 0.15);
+            background: rgba(255, 142, 92, 0.15);
         }
         
         .action-tile:nth-child(4) .tile-icon {
-            background: rgba(255, 45, 85, 0.15);
+            background: rgba(255, 90, 45, 0.15);
         }
         
         .action-tile:nth-child(1):hover .tile-icon {
@@ -633,18 +717,18 @@
         }
         
         .action-tile:nth-child(4):hover .tile-icon {
-            background: linear-gradient(135deg, #FF2D55 0%, #FF375F 100%);
+            background: linear-gradient(135deg, #FF5A2D 0%, #FF6B35 100%);
         }
         
         /* Info Panel */
         .info-panel {
             background: linear-gradient(145deg, 
-                rgba(255, 55, 95, 0.1), 
-                rgba(255, 100, 130, 0.05));
+                rgba(255, 107, 53, 0.1), 
+                rgba(255, 122, 69, 0.05));
             border-radius: var(--radius-lg);
             padding: 28px;
             margin-bottom: 28px;
-            border: 1px solid rgba(255, 55, 95, 0.2);
+            border: 1px solid rgba(255, 107, 53, 0.2);
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -653,7 +737,7 @@
         
         .info-panel:hover {
             transform: translateY(-4px);
-            box-shadow: 0 20px 60px rgba(255, 55, 95, 0.2);
+            box-shadow: 0 20px 60px rgba(255, 107, 53, 0.2);
         }
         
         .info-panel::before {
@@ -694,7 +778,7 @@
             color: white;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 8px 30px rgba(255, 55, 95, 0.3);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.3);
             animation: highlight-pulse 2s infinite ease-in-out;
         }
         
@@ -743,11 +827,11 @@
         @keyframes logo-float {
             0%, 100% { 
                 transform: translateY(0);
-                filter: drop-shadow(0 0 20px rgba(255, 55, 95, 0.5));
+                filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.5));
             }
             50% { 
                 transform: translateY(-15px);
-                filter: drop-shadow(0 0 40px rgba(255, 55, 95, 0.8));
+                filter: drop-shadow(0 0 40px rgba(255, 107, 53, 0.8));
             }
         }
         
@@ -758,12 +842,12 @@
         
         @keyframes subtitle-glow {
             0%, 100% { opacity: 0.6; text-shadow: 0 0 10px transparent; }
-            50% { opacity: 1; text-shadow: 0 0 20px rgba(255, 55, 95, 0.5); }
+            50% { opacity: 1; text-shadow: 0 0 20px rgba(255, 107, 53, 0.5); }
         }
         
         @keyframes percentage-pulse {
-            0%, 100% { transform: scale(1); text-shadow: 0 0 30px rgba(255, 55, 95, 0.8); }
-            50% { transform: scale(1.05); text-shadow: 0 0 50px rgba(255, 55, 95, 1); }
+            0%, 100% { transform: scale(1); text-shadow: 0 0 30px rgba(255, 107, 53, 0.8); }
+            50% { transform: scale(1.05); text-shadow: 0 0 50px rgba(255, 107, 53, 1); }
         }
         
         @keyframes loading-particle {
@@ -775,33 +859,33 @@
         @keyframes status-icon-pulse {
             0%, 100% { 
                 transform: scale(1);
-                box-shadow: 0 0 20px rgba(255, 100, 130, 0.5);
+                box-shadow: 0 0 20px rgba(255, 122, 69, 0.5);
             }
             50% { 
                 transform: scale(1.1);
-                box-shadow: 0 0 40px rgba(255, 100, 130, 0.8);
+                box-shadow: 0 0 40px rgba(255, 122, 69, 0.8);
             }
         }
         
         @keyframes info-glow {
             0%, 100% { 
                 opacity: 1;
-                box-shadow: 0 0 30px rgba(255, 55, 95, 0.7);
+                box-shadow: 0 0 30px rgba(255, 107, 53, 0.7);
             }
             50% { 
                 opacity: 0.6;
-                box-shadow: 0 0 15px rgba(255, 55, 95, 0.4);
+                box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
             }
         }
         
         @keyframes highlight-pulse {
             0%, 100% { 
                 transform: scale(1);
-                box-shadow: 0 8px 30px rgba(255, 55, 95, 0.3);
+                box-shadow: 0 8px 30px rgba(255, 107, 53, 0.3);
             }
             50% { 
                 transform: scale(1.05);
-                box-shadow: 0 12px 40px rgba(255, 55, 95, 0.5);
+                box-shadow: 0 12px 40px rgba(255, 107, 53, 0.5);
             }
         }
         
@@ -839,6 +923,16 @@
                 font-size: 36px;
             }
             
+            .snus-pack {
+                width: 80px !important;
+                height: 80px !important;
+            }
+            
+            .snus-icon {
+                width: 40px !important;
+                height: 40px !important;
+            }
+            
             .app-header {
                 padding: 50px 24px 30px;
             }
@@ -869,6 +963,17 @@
         <!-- Cosmic Background -->
         <div class="cosmic-bg" id="cosmicBg"></div>
         
+        <!-- Pack decorations -->
+        <img src="pack.png" class="snus-pack pack-1" alt="SNUS Pack">
+        <img src="pack.png" class="snus-pack pack-2" alt="SNUS Pack">
+        <img src="pack.png" class="snus-pack pack-3" alt="SNUS Pack">
+        <img src="pack.png" class="snus-pack pack-4" alt="SNUS Pack">
+        
+        <!-- Icon decorations -->
+        <img src="icon.PNG" class="snus-icon icon-1" alt="SNUS Icon">
+        <img src="icon.PNG" class="snus-icon icon-2" alt="SNUS Icon">
+        <img src="icon.PNG" class="snus-icon icon-3" alt="SNUS Icon">
+        
         <!-- Magnificent Loading Screen -->
         <div class="loading-screen" id="loadingScreen">
             <div class="cosmic-logo-container">
@@ -877,7 +982,7 @@
                 </div>
             </div>
             
-            <h1 class="loading-title">VKIDSKAS ПРИЁМКА</h1>
+            <h1 class="loading-title">VKIDSKAS SNUS</h1>
             <div class="loading-subtitle" id="loadingText">КОСМИЧЕСКАЯ ЗАГРУЗКА</div>
             
             <div class="circle-progress-container">
@@ -900,7 +1005,7 @@
                 <div class="header-logo">
                     <img src="icon.PNG" alt="VKIDSKAS">
                 </div>
-                <h1 class="app-title">VKIDSKAS ПРИЁМКА</h1>
+                <h1 class="app-title">VKIDSKAS SNUS</h1>
                 <div class="app-subtitle">ПРЕМИУМ СЕРВИС</div>
             </div>
             
@@ -912,7 +1017,7 @@
                         <div class="status-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                 <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" fill="white"/>
-                                <path d="M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#FF6482"/>
+                                <path d="M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#FF7A45"/>
                             </svg>
                         </div>
                         <div class="status-info">
@@ -929,8 +1034,8 @@
                         <div class="tile-icon">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                                 <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
-                                <path d="M7 9H17" stroke="#FF375F" stroke-width="2" stroke-linecap="round"/>
-                                <path d="M7 13H13" stroke="#FF375F" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M7 9H17" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M7 13H13" stroke="#FF6B35" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                         </div>
                         <div class="tile-content">
@@ -944,12 +1049,12 @@
                         <div class="tile-icon">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                                 <rect x="4" y="4" width="16" height="16" rx="4" fill="white"/>
-                                <path d="M8 12H16" stroke="#FF6482" stroke-width="2" stroke-linecap="round"/>
-                                <path d="M12 8V16" stroke="#FF6482" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M8 12H16" stroke="#FF7A45" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M12 8V16" stroke="#FF7A45" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                         </div>
                         <div class="tile-content">
-                            <div class="tile-title">ПРИЁМКА</div>
+                            <div class="tile-title">SNUS</div>
                             <div class="tile-desc">Максимальные цены</div>
                             <div class="tile-badge">Hot</div>
                         </div>
@@ -959,8 +1064,8 @@
                         <div class="tile-icon">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                                 <circle cx="12" cy="12" r="10" fill="white"/>
-                                <circle cx="12" cy="9" r="1" fill="#FF6B8B"/>
-                                <path d="M12 13V17" stroke="#FF6B8B" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="12" cy="9" r="1" fill="#FF8E5C"/>
+                                <path d="M12 13V17" stroke="#FF8E5C" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                         </div>
                         <div class="tile-content">
@@ -974,9 +1079,9 @@
                         <div class="tile-icon">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                                 <path d="M19 4H5C3.9 4 3 4.9 3 6V18C3 19.1 3.9 20 5 20H19C20.1 20 21 19.1 21 18V6C21 4.9 20.1 4 19 4Z" fill="white"/>
-                                <rect x="7" y="8" width="10" height="2" fill="#FF2D55"/>
-                                <rect x="7" y="12" width="10" height="2" fill="#FF2D55"/>
-                                <rect x="7" y="16" width="6" height="2" fill="#FF2D55"/>
+                                <rect x="7" y="8" width="10" height="2" fill="#FF5A2D"/>
+                                <rect x="7" y="12" width="10" height="2" fill="#FF5A2D"/>
+                                <rect x="7" y="16" width="6" height="2" fill="#FF5A2D"/>
                             </svg>
                         </div>
                         <div class="tile-content">
@@ -1021,7 +1126,7 @@
             
             // Эффект нажатия с пульсацией
             tile.style.transform = 'translateY(-12px) scale(1.05)';
-            tile.style.boxShadow = '0 30px 80px rgba(255, 55, 95, 0.6)';
+            tile.style.boxShadow = '0 30px 80px rgba(255, 107, 53, 0.6)';
             
             // Анимация иконки
             const icon = tile.querySelector('.tile-icon');
@@ -1033,7 +1138,7 @@
             ripple.style.width = '100%';
             ripple.style.height = '100%';
             ripple.style.borderRadius = 'var(--radius-lg)';
-            ripple.style.background = 'radial-gradient(circle, rgba(255, 55, 95, 0.4), transparent 70%)';
+            ripple.style.background = 'radial-gradient(circle, rgba(255, 107, 53, 0.4), transparent 70%)';
             ripple.style.animation = 'cosmic-ripple 0.8s ease-out forwards';
             tile.appendChild(ripple);
             
@@ -1046,7 +1151,7 @@
             
             setTimeout(() => {
                 tile.style.transform = 'translateY(-8px) scale(1.02)';
-                tile.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 55, 95, 0.3)';
+                tile.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 107, 53, 0.3)';
                 icon.style.transform = 'scale(1.15) rotate(10deg)';
                 ripple.remove();
                 
