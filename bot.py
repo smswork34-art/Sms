@@ -1,14 +1,18 @@
 import telebot
 from telebot import types
 import requests
+import time
+import threading
 
 TOKEN = "8874133675:AAHdZzVvTUNQNiP-Bt2RxvSOYfqqGBSXVDo"
 CRYPTO_API = "59054:AAeYmni9Huqfd3L9jB05jquBxg5VLxFI7Vs"
 CRYPTO_BOT_URL = "https://testnet-pay.crypt.bot/api"
 API_URL = "https://dolies.pythonanywhere.com/api"
+ADMIN_ID = 7518728008  # Твой Telegram ID для уведомлений
 
 bot = telebot.TeleBot(TOKEN)
 bot.remove_webhook()
+
 user_states = {}
 
 S = {
@@ -16,6 +20,25 @@ S = {
     'star': '★', 'refresh': '↻', 'crown': '♛', 'globe': '◎', 'pen': '✎', 'dot': '·',
 }
 
+# === АНТИ-СОН ===
+def keep_alive():
+    """Пинг API и уведомление админу каждые 3 минуты"""
+    while True:
+        time.sleep(180)  # 3 минуты
+        try:
+            # Пингуем наш API
+            r = requests.get(f"{API_URL}/user/{ADMIN_ID}")
+            if r.status_code == 200:
+                print(f"✓ Keep-alive: {time.strftime('%H:%M:%S')}")
+            # Отправляем уведомление админу
+            bot.send_message(ADMIN_ID, f"◇ Анти-сон: бот активен\n{time.strftime('%H:%M:%S')}")
+        except Exception as e:
+            print(f"✗ Keep-alive error: {e}")
+
+# Запускаем в отдельном потоке
+threading.Thread(target=keep_alive, daemon=True).start()
+
+# === КРИПТО ===
 def create_invoice(amount):
     url = f"{CRYPTO_BOT_URL}/createInvoice"
     headers = {"Crypto-Pay-API-Token": CRYPTO_API}
@@ -31,6 +54,7 @@ def check_invoice(invoice_id):
         return requests.get(url, headers=headers, params={"invoice_ids": invoice_id}).json()
     except: return None
 
+# === КЛАВИАТУРЫ ===
 def main_keyboard():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(types.KeyboardButton(f"{S['gem']} Пополнить депозит"), types.KeyboardButton(f"{S['game']} Пополнить казино"))
@@ -40,10 +64,19 @@ def main_keyboard():
 def amounts_keyboard(prefix):
     currency = 'USDT' if prefix == 'dep' else '$'
     markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(*[types.InlineKeyboardButton(f"{a} {currency}", callback_data=f"{prefix}_{a}") for a in [10, 25, 50, 100, 500]])
-    markup.add(types.InlineKeyboardButton(f"{S['pen']} Своя сумма", callback_data=f"{prefix}_custom"), types.InlineKeyboardButton(f"{S['cross']} Отмена", callback_data=f"{prefix}_cancel"))
+    for a in [10, 25, 50, 100, 500]:
+        markup.add(types.InlineKeyboardButton(f"{a} {currency}", callback_data=f"{prefix}_{a}"))
+    markup.add(types.InlineKeyboardButton(f"{S['pen']} Своя сумма", callback_data=f"{prefix}_custom"))
+    markup.add(types.InlineKeyboardButton(f"{S['cross']} Отмена", callback_data=f"{prefix}_cancel"))
     return markup
 
+def payment_keyboard(invoice_url, check_data):
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton(f"{S['gem']} Оплатить", url=invoice_url))
+    markup.add(types.InlineKeyboardButton(f"{S['refresh']} Проверить", callback_data=check_data))
+    return markup
+
+# === КОМАНДЫ ===
 @bot.message_handler(commands=['start'])
 def start(message):
     text = f"{S['crown']} DOLIES COMPANY\n{S['star']} Добро пожаловать!\n\n{S['dot']} Выбери действие:"
@@ -90,7 +123,6 @@ def create_payment(call, amount, pay_type):
     if invoice and invoice.get('ok'):
         invoice_url = invoice['result']['pay_url']
         invoice_id = invoice['result']['invoice_id']
-        # Сохраняем в API PythonAnywhere
         requests.post(f"{API_URL}/invoice/create", json={"user_id": call.from_user.id, "invoice_id": invoice_id, "amount": amount, "pay_type": pay_type})
         check_data = f"check_{pay_type}_{invoice_id}"
         currency = 'USDT' if pay_type == 'deposit' else '$'
@@ -98,12 +130,6 @@ def create_payment(call, amount, pay_type):
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=payment_keyboard(invoice_url, check_data), parse_mode="HTML")
     else:
         bot.edit_message_text(f"{S['cross']} Ошибка создания счёта", call.message.chat.id, call.message.message_id)
-
-def payment_keyboard(invoice_url, check_data):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(f"{S['gem']} Оплатить", url=invoice_url))
-    markup.add(types.InlineKeyboardButton(f"{S['refresh']} Проверить", callback_data=check_data))
-    return markup
 
 @bot.message_handler(func=lambda m: user_states.get(m.from_user.id) in ['waiting_dep', 'waiting_casino'])
 def custom_amount(message):
