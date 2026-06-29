@@ -4,7 +4,7 @@ import requests
 import time
 import threading
 
-TOKEN = "8950946789:AAEvGNNj65P33VL4N9sVFIkNdJFKuCv3Hhk"
+TOKEN = "8950946789:AAF9oW0piW6YbnveA7rZXiO4KiK9LLnDLEY"
 CRYPTO_API = "575343:AA8lI3rebCZuc9HxysqN073qP3jLgrz2sx8"  # ← Замени!
 CRYPTO_BOT_URL = "https://pay.crypt.bot/api"  # Боевой
 API_URL = "https://dolies.pythonanywhere.com/api"
