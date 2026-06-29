@@ -21,7 +21,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger('DoliesBot')
 
-# Токены (лучше через переменные окружения)
+# Токены
 TOKEN = os.environ.get('TELEGRAM_TOKEN', '8950946789:AAF9oW0piW6YbnveA7rZXiO4KiK9LLnDLEY')
 CRYPTO_API = os.environ.get('CRYPTO_API', '575343:AA8lI3rebCZuc9HxysqN073qP3jLgrz2sx8')
 CRYPTO_BOT_URL = "https://pay.crypt.bot/api"
@@ -34,12 +34,10 @@ web_app = Flask(__name__)
 
 @web_app.route('/')
 def index():
-    """Главная страница"""
     return f'DOLIES Bot is running! 🚀\nTime: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 200
 
 @web_app.route('/health')
 def health():
-    """Health check для мониторинга"""
     return json.dumps({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
@@ -48,7 +46,6 @@ def health():
 
 @web_app.route('/ping')
 def ping():
-    """Проверка работоспособности бота"""
     try:
         me = bot.get_me()
         return json.dumps({
@@ -61,10 +58,12 @@ def ping():
         logger.error(f"Ping check failed: {e}")
         return json.dumps({'ok': False, 'error': str(e)}), 500
 
-# ===== БОТ =====
-bot = telebot.TeleBot(TOKEN, threaded=True, num_workers=4)
+# ===== БОТ (исправленная строка) =====
+bot = telebot.TeleBot(TOKEN, threaded=True)
 bot.remove_webhook()
 logger.info("✅ Webhook removed, using polling mode")
+
+# Дальше весь код без изменений...
 
 # ===== КЭШ СОСТОЯНИЙ ПОЛЬЗОВАТЕЛЕЙ =====
 class UserStateCache:
