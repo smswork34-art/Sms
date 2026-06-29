@@ -5,10 +5,10 @@ import time
 import threading
 
 TOKEN = "8950946789:AAEvGNNj65P33VL4N9sVFIkNdJFKuCv3Hhk"
-CRYPTO_API = "59054:AAeYmni9Huqfd3L9jB05jquBxg5VLxFI7Vs"
-CRYPTO_BOT_URL = "https://testnet-pay.crypt.bot/api"
+CRYPTO_API = "575343:AA8lI3rebCZuc9HxysqN073qP3jLgrz2sx8"  # ← Замени!
+CRYPTO_BOT_URL = "https://pay.crypt.bot/api"  # Боевой
 API_URL = "https://dolies.pythonanywhere.com/api"
-ADMIN_ID = 7518728008  # Твой Telegram ID для уведомлений
+ADMIN_ID = 7518728008
 
 bot = telebot.TeleBot(TOKEN)
 bot.remove_webhook()
@@ -20,29 +20,27 @@ S = {
     'star': '★', 'refresh': '↻', 'crown': '♛', 'globe': '◎', 'pen': '✎', 'dot': '·',
 }
 
-# === АНТИ-СОН ===
+# Анти-сон
 def keep_alive():
-    """Пинг API и уведомление админу каждые 3 минуты"""
     while True:
-        time.sleep(180)  # 3 минуты
+        time.sleep(180)
         try:
-            # Пингуем наш API
-            r = requests.get(f"{API_URL}/user/{ADMIN_ID}")
-            if r.status_code == 200:
-                print(f"✓ Keep-alive: {time.strftime('%H:%M:%S')}")
-            # Отправляем уведомление админу
-            bot.send_message(ADMIN_ID, f"◇ Анти-сон: бот активен\n{time.strftime('%H:%M:%S')}")
-        except Exception as e:
-            print(f"✗ Keep-alive error: {e}")
+            requests.get(f"{API_URL}/user/{ADMIN_ID}")
+            print(f"✓ Keep-alive: {time.strftime('%H:%M:%S')}")
+        except: pass
 
-# Запускаем в отдельном потоке
 threading.Thread(target=keep_alive, daemon=True).start()
 
-# === КРИПТО ===
 def create_invoice(amount):
     url = f"{CRYPTO_BOT_URL}/createInvoice"
     headers = {"Crypto-Pay-API-Token": CRYPTO_API}
-    data = {"asset": "USDT", "amount": str(amount), "description": "DOLIES", "paid_btn_name": "callback", "paid_btn_url": "https://t.me/dolies_bot"}
+    data = {
+        "asset": "USDT",
+        "amount": str(amount),
+        "description": f"Пополнение DOLIES: {amount} USDT",
+        "paid_btn_name": "callback",
+        "paid_btn_url": "https://t.me/dolies_bot"
+    }
     try:
         return requests.post(url, headers=headers, json=data).json()
     except: return None
@@ -54,7 +52,6 @@ def check_invoice(invoice_id):
         return requests.get(url, headers=headers, params={"invoice_ids": invoice_id}).json()
     except: return None
 
-# === КЛАВИАТУРЫ ===
 def main_keyboard():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(types.KeyboardButton(f"{S['gem']} Пополнить депозит"), types.KeyboardButton(f"{S['game']} Пополнить казино"))
@@ -72,11 +69,10 @@ def amounts_keyboard(prefix):
 
 def payment_keyboard(invoice_url, check_data):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(f"{S['gem']} Оплатить", url=invoice_url))
-    markup.add(types.InlineKeyboardButton(f"{S['refresh']} Проверить", callback_data=check_data))
+    markup.add(types.InlineKeyboardButton(f"{S['gem']} Оплатить через CryptoBot", url=invoice_url))
+    markup.add(types.InlineKeyboardButton(f"{S['refresh']} Проверить оплату", callback_data=check_data))
     return markup
 
-# === КОМАНДЫ ===
 @bot.message_handler(commands=['start'])
 def start(message):
     text = f"{S['crown']} DOLIES COMPANY\n{S['star']} Добро пожаловать!\n\n{S['dot']} Выбери действие:"
@@ -126,10 +122,10 @@ def create_payment(call, amount, pay_type):
         requests.post(f"{API_URL}/invoice/create", json={"user_id": call.from_user.id, "invoice_id": invoice_id, "amount": amount, "pay_type": pay_type})
         check_data = f"check_{pay_type}_{invoice_id}"
         currency = 'USDT' if pay_type == 'deposit' else '$'
-        text = f"{S['gem']} <b>СЧЁТ СОЗДАН</b>\n\nСумма: <code>{amount} {currency}</code>\n\nОплати через @Cryptotestnetbot"
+        text = f"{S['gem']} <b>СЧЁТ СОЗДАН</b>\n\nСумма: <code>{amount} {currency}</code>\n\nОплати через @CryptoBot"
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=payment_keyboard(invoice_url, check_data), parse_mode="HTML")
     else:
-        bot.edit_message_text(f"{S['cross']} Ошибка создания счёта", call.message.chat.id, call.message.message_id)
+        bot.edit_message_text(f"{S['cross']} Ошибка создания счёта\n\nПроверь API ключ CryptoBot", call.message.chat.id, call.message.message_id)
 
 @bot.message_handler(func=lambda m: user_states.get(m.from_user.id) in ['waiting_dep', 'waiting_casino'])
 def custom_amount(message):
@@ -163,7 +159,7 @@ def check_payment(call):
         text = f"{S['check']} <b>ОПЛАЧЕНО!</b>\n\n{S['gem']} Депозит: <code>{r.get('deposit', 0):,.1f} USDT</code>\n{S['game']} Казино: <code>{r.get('roulette_balance', 0):.1f} $</code>"
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="HTML")
     else:
-        bot.answer_callback_query(call.id, "Счёт не оплачен")
+        bot.answer_callback_query(call.id, "❌ Счёт не оплачен")
 
 if __name__ == '__main__':
     print("◈ DOLIES BOT ◈")
