@@ -8,6 +8,7 @@ CRYPTO_BOT_URL = "https://testnet-pay.crypt.bot/api"
 API_URL = "https://dolies.pythonanywhere.com/api"
 
 bot = telebot.TeleBot(TOKEN)
+bot.remove_webhook()
 user_states = {}
 
 S = {
