@@ -3,12 +3,20 @@ from telebot import types
 import requests
 import time
 import threading
+from flask import Flask
 
 TOKEN = "8950946789:AAF9oW0piW6YbnveA7rZXiO4KiK9LLnDLEY"
-CRYPTO_API = "575343:AA8lI3rebCZuc9HxysqN073qP3jLgrz2sx8"  # ← Замени!
-CRYPTO_BOT_URL = "https://pay.crypt.bot/api"  # Боевой
+CRYPTO_API = "575343:AA8lI3rebCZuc9HxysqN073qP3jLgrz2sx8"
+CRYPTO_BOT_URL = "https://pay.crypt.bot/api"
 API_URL = "https://dolies.pythonanywhere.com/api"
 ADMIN_ID = 7518728008
+
+# Flask для Render (чтобы порт был открыт)
+web_app = Flask(__name__)
+
+@web_app.route('/')
+def index():
+    return 'Bot is running!'
 
 bot = telebot.TeleBot(TOKEN)
 bot.remove_webhook()
@@ -34,22 +42,14 @@ threading.Thread(target=keep_alive, daemon=True).start()
 def create_invoice(amount):
     url = f"{CRYPTO_BOT_URL}/createInvoice"
     headers = {"Crypto-Pay-API-Token": CRYPTO_API}
-    data = {
-        "asset": "USDT",
-        "amount": str(amount),
-        "description": f"Пополнение DOLIES: {amount} USDT",
-        "paid_btn_name": "callback",
-        "paid_btn_url": "https://t.me/dolies_bot"
-    }
-    try:
-        return requests.post(url, headers=headers, json=data).json()
+    data = {"asset": "USDT", "amount": str(amount), "description": f"DOLIES: {amount} USDT", "paid_btn_name": "callback", "paid_btn_url": "https://t.me/dolies_bot"}
+    try: return requests.post(url, headers=headers, json=data).json()
     except: return None
 
 def check_invoice(invoice_id):
     url = f"{CRYPTO_BOT_URL}/getInvoices"
     headers = {"Crypto-Pay-API-Token": CRYPTO_API}
-    try:
-        return requests.get(url, headers=headers, params={"invoice_ids": invoice_id}).json()
+    try: return requests.get(url, headers=headers, params={"invoice_ids": invoice_id}).json()
     except: return None
 
 def main_keyboard():
@@ -63,20 +63,18 @@ def amounts_keyboard(prefix):
     markup = types.InlineKeyboardMarkup(row_width=2)
     for a in [10, 25, 50, 100, 500]:
         markup.add(types.InlineKeyboardButton(f"{a} {currency}", callback_data=f"{prefix}_{a}"))
-    markup.add(types.InlineKeyboardButton(f"{S['pen']} Своя сумма", callback_data=f"{prefix}_custom"))
-    markup.add(types.InlineKeyboardButton(f"{S['cross']} Отмена", callback_data=f"{prefix}_cancel"))
+    markup.add(types.InlineKeyboardButton(f"{S['pen']} Своя сумма", callback_data=f"{prefix}_custom"), types.InlineKeyboardButton(f"{S['cross']} Отмена", callback_data=f"{prefix}_cancel"))
     return markup
 
 def payment_keyboard(invoice_url, check_data):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(f"{S['gem']} Оплатить через CryptoBot", url=invoice_url))
-    markup.add(types.InlineKeyboardButton(f"{S['refresh']} Проверить оплату", callback_data=check_data))
+    markup.add(types.InlineKeyboardButton(f"{S['gem']} Оплатить", url=invoice_url))
+    markup.add(types.InlineKeyboardButton(f"{S['refresh']} Проверить", callback_data=check_data))
     return markup
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    text = f"{S['crown']} DOLIES COMPANY\n{S['star']} Добро пожаловать!\n\n{S['dot']} Выбери действие:"
-    bot.send_message(message.chat.id, text, reply_markup=main_keyboard())
+    bot.send_message(message.chat.id, f"{S['crown']} DOLIES COMPANY\n{S['star']} Добро пожаловать!\n\n{S['dot']} Выбери действие:", reply_markup=main_keyboard())
 
 @bot.message_handler(func=lambda m: "Пополнить депозит" in m.text)
 def deposit_start(message):
@@ -90,10 +88,10 @@ def casino_start(message):
 def check_balance(message):
     try:
         r = requests.get(f"{API_URL}/user/{message.from_user.id}").json()
-        text = f"{S['wallet']} <b>БАЛАНС</b>\n\n{S['gem']} Депозит: <code>{r.get('deposit', 0):,.1f} USDT</code>\n{S['game']} Казино: <code>{r.get('roulette_balance', 0):.1f} $</code>"
+        text = f"{S['wallet']} <b>БАЛАНС</b>\n\n{S['gem']} Депозит: <code>{r.get('deposit',0):,.1f} USDT</code>\n{S['game']} Казино: <code>{r.get('roulette_balance',0):.1f} $</code>"
         bot.send_message(message.chat.id, text, reply_markup=main_keyboard(), parse_mode="HTML")
     except:
-        bot.send_message(message.chat.id, "Ошибка загрузки баланса")
+        bot.send_message(message.chat.id, "Ошибка")
 
 @bot.message_handler(func=lambda m: "Приложение" in m.text)
 def open_miniapp(message):
@@ -101,18 +99,16 @@ def open_miniapp(message):
     markup.add(types.InlineKeyboardButton(f"{S['globe']} Открыть DOLIES", web_app=types.WebAppInfo(url="https://dolies.pythonanywhere.com")))
     bot.send_message(message.chat.id, "Нажми кнопку ниже", reply_markup=markup)
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith(('dep_', 'casino_')))
+@bot.callback_query_handler(func=lambda call: call.data.startswith(('dep_','casino_')))
 def process_payment(call):
     parts = call.data.split('_')
     prefix = parts[0]
     if parts[1] == 'cancel': return bot.edit_message_text(f"{S['cross']} Отменено", call.message.chat.id, call.message.message_id)
     if parts[1] == 'custom':
         user_states[call.from_user.id] = f'waiting_{prefix}'
-        currency = 'USDT' if prefix == 'dep' else '$'
-        return bot.edit_message_text(f"Введи сумму в {currency}", call.message.chat.id, call.message.message_id)
+        return bot.edit_message_text(f"Введи сумму в {'USDT' if prefix=='dep' else '$'}", call.message.chat.id, call.message.message_id)
     amount = float(parts[1])
-    pay_type = 'deposit' if prefix == 'dep' else 'casino'
-    create_payment(call, amount, pay_type)
+    create_payment(call, amount, 'deposit' if prefix=='dep' else 'casino')
 
 def create_payment(call, amount, pay_type):
     invoice = create_invoice(amount)
@@ -121,27 +117,25 @@ def create_payment(call, amount, pay_type):
         invoice_id = invoice['result']['invoice_id']
         requests.post(f"{API_URL}/invoice/create", json={"user_id": call.from_user.id, "invoice_id": invoice_id, "amount": amount, "pay_type": pay_type})
         check_data = f"check_{pay_type}_{invoice_id}"
-        currency = 'USDT' if pay_type == 'deposit' else '$'
-        text = f"{S['gem']} <b>СЧЁТ СОЗДАН</b>\n\nСумма: <code>{amount} {currency}</code>\n\nОплати через @CryptoBot"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=payment_keyboard(invoice_url, check_data), parse_mode="HTML")
+        currency = 'USDT' if pay_type=='deposit' else '$'
+        bot.edit_message_text(f"{S['gem']} <b>СЧЁТ СОЗДАН</b>\n\nСумма: <code>{amount} {currency}</code>", call.message.chat.id, call.message.message_id, reply_markup=payment_keyboard(invoice_url, check_data), parse_mode="HTML")
     else:
-        bot.edit_message_text(f"{S['cross']} Ошибка создания счёта\n\nПроверь API ключ CryptoBot", call.message.chat.id, call.message.message_id)
+        bot.edit_message_text(f"{S['cross']} Ошибка создания счёта", call.message.chat.id, call.message.message_id)
 
-@bot.message_handler(func=lambda m: user_states.get(m.from_user.id) in ['waiting_dep', 'waiting_casino'])
+@bot.message_handler(func=lambda m: user_states.get(m.from_user.id) in ['waiting_dep','waiting_casino'])
 def custom_amount(message):
     state = user_states.pop(message.from_user.id, None)
     try:
-        amount = float(message.text.replace(',', '.'))
+        amount = float(message.text.replace(',','.'))
         if amount <= 0 or amount > 10000: return bot.send_message(message.chat.id, "Сумма от 1 до 10000")
-        pay_type = 'deposit' if state == 'waiting_dep' else 'casino'
+        pay_type = 'deposit' if state=='waiting_dep' else 'casino'
         invoice = create_invoice(amount)
         if invoice and invoice.get('ok'):
             invoice_url = invoice['result']['pay_url']
             invoice_id = invoice['result']['invoice_id']
             requests.post(f"{API_URL}/invoice/create", json={"user_id": message.from_user.id, "invoice_id": invoice_id, "amount": amount, "pay_type": pay_type})
             check_data = f"check_{pay_type}_{invoice_id}"
-            currency = 'USDT' if pay_type == 'deposit' else '$'
-            bot.send_message(message.chat.id, f"{S['gem']} <b>СЧЁТ СОЗДАН</b>\n\nСумма: <code>{amount} {currency}</code>", reply_markup=payment_keyboard(invoice_url, check_data), parse_mode="HTML")
+            bot.send_message(message.chat.id, f"{S['gem']} <b>СЧЁТ СОЗДАН</b>\n\nСумма: <code>{amount} {'USDT' if pay_type=='deposit' else '$'}</code>", reply_markup=payment_keyboard(invoice_url, check_data), parse_mode="HTML")
     except ValueError:
         bot.send_message(message.chat.id, "Введи число!")
 
@@ -151,15 +145,20 @@ def check_payment(call):
     result = check_invoice(invoice_id)
     if result and result.get('ok') and result['result']['items'][0]['status'] == 'paid':
         user_id = call.from_user.id
-        invoice = requests.get(f"{API_URL}/invoice/{invoice_id}?user_id={user_id}").json()
-        if invoice.get('status') != 'paid':
-            amount = invoice['amount']
-            requests.post(f"{API_URL}/invoice/pay", json={"user_id": user_id, "invoice_id": invoice_id, "amount": amount, "pay_type": pay_type})
+        inv = requests.get(f"{API_URL}/invoice/{invoice_id}?user_id={user_id}").json()
+        if inv.get('status') != 'paid':
+            requests.post(f"{API_URL}/invoice/pay", json={"user_id": user_id, "invoice_id": invoice_id, "amount": inv['amount'], "pay_type": pay_type})
         r = requests.get(f"{API_URL}/user/{user_id}").json()
-        text = f"{S['check']} <b>ОПЛАЧЕНО!</b>\n\n{S['gem']} Депозит: <code>{r.get('deposit', 0):,.1f} USDT</code>\n{S['game']} Казино: <code>{r.get('roulette_balance', 0):.1f} $</code>"
+        text = f"{S['check']} <b>ОПЛАЧЕНО!</b>\n\n{S['gem']} Депозит: <code>{r.get('deposit',0):,.1f} USDT</code>\n{S['game']} Казино: <code>{r.get('roulette_balance',0):.1f} $</code>"
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="HTML")
     else:
         bot.answer_callback_query(call.id, "❌ Счёт не оплачен")
+
+# Запуск Flask в отдельном потоке для Render
+def run_flask():
+    web_app.run(host='0.0.0.0', port=10000)
+
+threading.Thread(target=run_flask, daemon=True).start()
 
 if __name__ == '__main__':
     print("◈ DOLIES BOT ◈")
