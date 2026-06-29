@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <title>DOLIES • Чат услуг с авто-гарантом | 29.06.2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Syne', 'Inter', system-ui, -apple-system, sans-serif;
+      padding: 16px;
+      margin: 0;
+    }
+    @media (min-width: 768px) {
+      body { background: radial-gradient(circle at center, #141418 0%, #000 80%); padding: 32px; }
+    }
+    .phone-frame {
+      max-width: 420px;
+      width: 100%;
+      background-color: #0A0A0B;
+      border-radius: 44px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 30px 50px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06);
+      display: flex;
+      flex-direction: column;
+      margin: 0 auto;
+      min-height: 700px;
+    }
+    @media (min-width: 768px) {
+      .phone-frame { border-radius: 48px; min-height: 750px; }
+    }
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: #0A0A0B;
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+    }
+    .screen-main { z-index: 2; transform: translateX(0); opacity: 1; }
+    .screen-main.hidden { transform: translateX(-30%); opacity: 0; pointer-events: none; }
+    .screen-profile, .screen-deals, .screen-history, .screen-roulette, .screen-guarantor, .screen-create-deal, .screen-deal-waiting { z-index: 1; transform: translateX(100%); opacity: 0; }
+    .screen-profile.active, .screen-deals.active, .screen-history.active, .screen-roulette.active, .screen-guarantor.active, .screen-create-deal.active, .screen-deal-waiting.active { transform: translateX(0); opacity: 1; z-index: 3; }
+    .screen-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 28px 20px 120px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (min-width: 768px) { .screen-content { padding: 36px 28px 130px 28px; gap: 28px; } }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: none;
+      color: #CAD4FC;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 8px 0;
+      letter-spacing: 0.04em;
+      align-self: flex-start;
+    }
+    .back-btn:hover { color: #fff; }
+    .back-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+    .header { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .main-title { font-size: 2.8rem; font-weight: 800; letter-spacing: 0.06em; color: #fff; text-transform: uppercase; line-height: 1; text-align: center; }
+    @media (min-width: 768px) { .main-title { font-size: 3.2rem; } }
+    .header-description { font-size: 0.85rem; font-style: italic; color: #707075; margin-top: 8px; text-align: center; }
+    .service-badge { display: flex; gap: 8px; margin-top: 8px; font-size: 0.68rem; font-weight: 600; color: #8E8E93; background: rgba(22,22,24,0.7); padding: 5px 12px; border-radius: 20px; }
+    .service-badge span { color: #CAD4FC; }
+    .section-title { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; color: #4E4E52; text-transform: uppercase; margin-bottom: 12px; }
+    .tg-link { text-decoration: none; display: block; width: 100%; }
+    .primary-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #CAD4FC;
+      border-radius: 22px;
+      padding: 18px 20px;
+      width: 100%;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-family: inherit;
+      color: #0A0A0B;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(202,212,252,0.15);
+    }
+    .primary-button:hover { background-color: #dbe1ff; transform: scale(1.02); }
+    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .dark-card {
+      background-color: #161618;
+      border-radius: 22px;
+      padding: 18px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+      cursor: pointer;
+      transition: all 0.25s;
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+    .dark-card:hover { background-color: #202024; border-color: rgba(202,212,252,0.3); transform: translateY(-3px); }
+    .card-title { font-size: 1.1rem; font-weight: 800; color: #fff; text-transform: uppercase; }
+    .card-subtitle { font-size: 0.75rem; color: #707075; margin-top: 4px; }
+    .announce-wrapper { position: relative; width: 100%; height: 140px; border-radius: 28px; overflow: hidden; }
+    .announce-slides { display: flex; width: 100%; height: 100%; transition: transform 0.5s; }
+    .announce-slide { min-width: 100%; height: 100%; background-color: #161618; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .announce-text { color: #fff; font-size: 0.95rem; font-weight: 600; text-align: center; }
+    .pagination-dots { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background-color: #4E4E52; cursor: pointer; transition: 0.3s; }
+    .dot.active { background-color: #CAD4FC; width: 7px; height: 7px; }
+    .secondary-header { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    .secondary-title { font-size: 1.4rem; font-weight: 800; color: #fff; }
+    .secondary-subtitle { font-size: 0.8rem; color: #707075; }
+    .profile-header { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 8px; }
+    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #CAD4FC, #8E98CC); display: flex; align-items: center; justify-content: center; }
+    .profile-avatar svg { width: 50px; height: 50px; fill: #0A0A0B; }
+    .profile-nickname { font-size: 1.6rem; font-weight: 800; color: #fff; }
+    .profile-id { font-size: 0.8rem; color: #707075; background: #161618; padding: 6px 14px; border-radius: 12px; }
+    .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stat-card { background-color: #161618; border-radius: 22px; padding: 18px 16px; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 800; color: #fff; }
+    .stat-label { font-size: 0.7rem; color: #707075; text-transform: uppercase; }
+    .deposit-full-card { background-color: #161618; border-radius: 24px; padding: 20px; display: flex; justify-content: space-between; }
+    .deposit-amount { font-size: 1.8rem; font-weight: 800; color: #CAD4FC; }
+    .list-container { display: flex; flex-direction: column; gap: 10px; }
+    .deal-card { background-color: #161618; border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; }
+    .deal-top { display: flex; align-items: center; justify-content: space-between; }
+    .deal-user { display: flex; align-items: center; gap: 10px; }
+    .deal-avatar-small { width: 36px; height: 36px; border-radius: 50%; background: #2C2C30; display: flex; align-items: center; justify-content: center; }
+    .deal-avatar-small svg { width: 18px; height: 18px; stroke: #A0A0A8; fill: none; stroke-width: 2; }
+    .deal-nickname { font-size: 0.9rem; font-weight: 700; color: #fff; }
+    .deal-user-id { font-size: 0.7rem; color: #707075; }
+    .deal-status { font-size: 0.68rem; font-weight: 700; padding: 5px 10px; border-radius: 10px; }
+    .deal-status.completed { background: rgba(76,175,80,0.15); color: #81C784; }
+    .deal-status.processing { background: rgba(255,183,77,0.15); color: #FFB74D; }
+    .deal-status.cancelled { background: rgba(239,83,80,0.15); color: #EF5350; }
+    .deal-bottom { display: flex; justify-content: space-between; }
+    .deal-amount { font-size: 1.1rem; font-weight: 800; color: #CAD4FC; }
+    .deal-description { font-size: 0.75rem; color: #8E8E93; text-align: right; }
+    .history-card { background-color: #161618; border-radius: 20px; padding: 16px 18px; display: flex; justify-content: space-between; cursor: pointer; }
+    .history-left { display: flex; align-items: center; gap: 12px; }
+    .history-icon { width: 40px; height: 40px; border-radius: 14px; background: rgba(76,175,80,0.12); display: flex; align-items: center; justify-content: center; }
+    .history-icon svg { width: 20px; height: 20px; stroke: #81C784; fill: none; stroke-width: 2; }
+    .history-type { font-size: 0.85rem; font-weight: 700; color: #fff; }
+    .history-date { font-size: 0.7rem; color: #707075; }
+    .history-right { text-align: right; }
+    .history-amount { font-size: 1.1rem; font-weight: 800; color: #81C784; }
+    .history-summary { background-color: #161618; border-radius: 24px; padding: 20px; display: flex; justify-content: space-between; }
+    .history-summary-label { font-size: 0.8rem; color: #707075; text-transform: uppercase; }
+    .history-summary-amount { font-size: 2rem; font-weight: 800; color: #fff; }
+    .guarantor-robot { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+    .robot-icon { width: 120px; height: 120px; background: rgba(202,212,252,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .robot-icon svg { width: 70px; height: 70px; stroke: #CAD4FC; fill: none; stroke-width: 1.5; }
+    .guarantor-text { text-align: center; color: #8E8E93; font-size: 0.9rem; line-height: 1.5; }
+    .create-deal-form { display: flex; flex-direction: column; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 0.75rem; font-weight: 700; color: #707075; text-transform: uppercase; letter-spacing: 0.06em; }
+    .form-input, .form-textarea { background: #161618; border: 1px solid #2C2C30; border-radius: 14px; padding: 14px 16px; color: #fff; font-family: inherit; font-size: 0.95rem; outline: none; }
+    .form-input:focus, .form-textarea:focus { border-color: #CAD4FC; }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .deal-waiting-card { background: #161618; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+    .waiting-icon { display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .waiting-icon svg { width: 60px; height: 60px; stroke: #FFB74D; fill: none; stroke-width: 1.5; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.5;} }
+    .waiting-status { font-size: 1rem; font-weight: 700; color: #FFB74D; text-align: center; }
+    .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 30; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal { background: #1d1d20; border-radius: 24px; padding: 24px; width: 90%; display: flex; flex-direction: column; gap: 16px; }
+    .modal-title { font-size: 1.1rem; font-weight: 700; color: #fff; text-align: center; }
+    .modal-input { background: #161618; border: 1px solid #2C2C30; border-radius: 14px; padding: 14px 16px; color: #fff; font-family: inherit; font-size: 0.95rem; outline: none; }
+    .modal-input:focus { border-color: #CAD4FC; }
+    .modal-btn { background: #CAD4FC; border: none; border-radius: 14px; padding: 14px; color: #0A0A0B; font-family: inherit; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; }
+    .modal-cancel { background: none; color: #707075; }
+    .found-user-card { background: #161618; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+    .found-user-card:hover { border-color: #CAD4FC; background: #202024; }
+    .sticky-footer {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      height: 56px;
+      background-color: #CAD4FC;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    }
+    @media (min-width: 768px) { .sticky-footer { bottom: 24px; left: 24px; right: 24px; height: 60px; border-radius: 32px; } }
+    .footer-knob, .footer-roulette-btn, .footer-guarantor-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 38px;
+      height: 38px;
+      background-color: #2C2C30;
+      border-radius: 50%;
+      z-index: 21;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s;
+    }
+    .footer-knob { left: 50%; transform: translate(-50%, -50%); width: 42px; height: 42px; }
+    .footer-knob:hover { background-color: #3a3a40; transform: translate(-50%, -50%) scale(1.06); }
+    .footer-knob svg { width: 20px; height: 20px; fill: none; stroke: #CAD4FC; stroke-width: 2.5; }
+    .footer-guarantor-btn { left: 24px; }
+    .footer-guarantor-btn:hover { background-color: #3a3a40; transform: translateY(-50%) scale(1.08); }
+    .footer-guarantor-btn svg { width: 20px; height: 20px; stroke: #CAD4FC; fill: none; stroke-width: 2; }
+    .footer-roulette-btn { right: 24px; }
+    .footer-roulette-btn:hover { background-color: #3a3a40; transform: translateY(-50%) scale(1.08); }
+    .footer-roulette-btn svg { width: 20px; height: 20px; stroke: #CAD4FC; fill: none; stroke-width: 2; }
+    @media (min-width: 768px) {
+      .footer-knob { width: 46px; height: 46px; }
+      .footer-knob svg, .footer-guarantor-btn svg, .footer-roulette-btn svg { width: 22px; height: 22px; }
+      .footer-guarantor-btn, .footer-roulette-btn { width: 42px; height: 42px; }
+      .footer-guarantor-btn { left: 28px; }
+      .footer-roulette-btn { right: 28px; }
+    }
+    .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 25; opacity: 0; pointer-events: none; transition: 0.3s; }
+    .menu-overlay.active { opacity: 1; pointer-events: all; }
+    .slide-menu { position: absolute; bottom: 0; left: 0; right: 0; background: #161618; border-radius: 32px 32px 0 0; padding: 32px 24px 40px; z-index: 26; transform: translateY(100%); transition: 0.4s; }
+    .slide-menu.active { transform: translateY(0); }
+    .menu-handle { width: 40px; height: 4px; background: #4E4E52; border-radius: 2px; margin: 0 auto 24px; }
+    .menu-title { font-size: 1.1rem; font-weight: 700; color: #fff; text-align: center; margin-bottom: 24px; text-transform: uppercase; }
+    .menu-items { display: flex; flex-direction: column; gap: 4px; }
+    .menu-item { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 16px; cursor: pointer; color: #fff; font-weight: 600; font-size: 0.95rem; background: none; border: none; font-family: inherit; width: 100%; text-align: left; }
+    .menu-item:hover { background: #202024; }
+    .menu-item-icon { width: 36px; height: 36px; border-radius: 12px; background: #2C2C30; display: flex; align-items: center; justify-content: center; }
+    .menu-item-icon svg { width: 18px; height: 18px; stroke: #CAD4FC; fill: none; stroke-width: 2; }
+    button { background: none; border: none; }
+    @media (max-width: 380px) { .screen-content { padding: 20px 16px 100px 16px; } .main-title { font-size: 2.2rem; } }
+  </style>
+</head>
+<body>
+  <div class="phone-frame" id="phoneFrame">
+    <!-- ГЛАВНЫЙ ЭКРАН -->
+    <div class="screen screen-main" id="screenMain">
+      <div class="screen-content" id="mainContent">
+        <header class="header">
+          <h1 class="main-title">DOLIES</h1>
+          <p class="header-description">чат услуг • авто-гарант • безопасные сделки</p>
+          <div class="service-badge">🛡️ <span>DOLIES COMPANY</span> • основан 29.06.2026</div>
+        </header>
+        <div class="links-section">
+          <div class="section-title">ССЫЛКИ</div>
+          <a href="https://t.me/dolies_chat" target="_blank" class="tg-link"><button class="primary-button">ЧАТ УСЛУГ / ПРЕДЛОЖКА</button></a>
+          <div class="grid-2col">
+            <a href="https://t.me/dolies_channel" target="_blank" class="dark-card"><div><div class="card-title">КАНАЛ</div><div class="card-subtitle">лента • новости</div></div></a>
+            <a href="https://t.me/dolies_bot" target="_blank" class="dark-card"><div><div class="card-title">БОТ</div><div class="card-subtitle">авто-гарант</div></div></a>
+          </div>
+        </div>
+        <div class="announce-section">
+          <div class="section-title">ОБЪЯВЛЕНИЯ</div>
+          <div class="announce-wrapper" id="announceWrapper"><div class="announce-slides" id="announceSlides">
+            <div class="announce-slide"><p class="announce-text">🚀 Запуск авто-гаранта</p></div>
+            <div class="announce-slide"><p class="announce-text">💎 Новые правила сервиса</p></div>
+            <div class="announce-slide"><p class="announce-text">🎯 Топ-исполнители месяца</p></div>
+          </div></div>
+          <div class="pagination-dots" id="paginationDots"><span class="dot active" data-index="0"></span><span class="dot" data-index="1"></span><span class="dot" data-index="2"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ПРОФИЛЬ -->
+    <div class="screen screen-profile" id="screenProfile">
+      <div class="screen-content" id="profileContent">
+        <button class="back-btn" id="profileBackBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>НАЗАД</button>
+        <div class="profile-header">
+          <div class="profile-avatar"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.04-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.74 3.98-1.73 6.63-2.87 7.96-3.42 3.79-1.58 4.58-1.85 5.09-1.86.11 0 .37.03.53.17.14.12.18.28.2.45.02.18.01.35.01.45z"/></svg></div>
+          <div class="profile-nickname" id="profileNickname">@username</div>
+          <div class="profile-id" id="profileId">ID: ...</div>
+        </div>
+        <div class="deposit-full-card"><div class="deposit-amount" id="profileDeposit">0 ₽</div></div>
+        <div class="profile-stats-grid">
+          <div class="stat-card"><div class="stat-value" style="color:#CAD4FC;" id="profileTotalDeals">0</div><div class="stat-label">сделок</div></div>
+          <div class="stat-card"><div class="stat-value" id="profileCompleted">0</div><div class="stat-label">успешных</div></div>
+          <div class="stat-card"><div class="stat-value" id="profileProcessing">0</div><div class="stat-label">в процессе</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#EF5350;" id="profileCancelled">0</div><div class="stat-label">отменённых</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- МОИ СДЕЛКИ -->
+    <div class="screen screen-deals" id="screenDeals">
+      <div class="screen-content" id="dealsContent">
+        <button class="back-btn" id="dealsBackBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>НАЗАД</button>
+        <div class="secondary-header"><div class="secondary-title">Мои сделки</div><div class="secondary-subtitle" id="dealsSubtitle">Загрузка...</div></div>
+        <div class="list-container" id="dealsList"><div style="color:#707075;text-align:center;">Загрузка...</div></div>
+      </div>
+    </div>
+
+    <!-- ИСТОРИЯ -->
+    <div class="screen screen-history" id="screenHistory">
+      <div class="screen-content" id="historyContent">
+        <button class="back-btn" id="historyBackBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>НАЗАД</button>
+        <div class="secondary-header"><div class="secondary-title">История депозита</div><div class="secondary-subtitle">Пополнения средств</div></div>
+        <div class="history-summary"><div><div class="history-summary-label">Всего пополнено</div><div class="history-summary-amount" id="historyTotal">0 ₽</div></div></div>
+        <div class="list-container" id="historyList"><div style="color:#707075;text-align:center;">Загрузка...</div></div>
+      </div>
+    </div>
+
+    <!-- РУЛЕТКА -->
+    <div class="screen screen-roulette" id="screenRoulette">
+      <div class="screen-content" id="rouletteContent">
+        <button class="back-btn" id="rouletteBackBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>НАЗАД</button>
+        <div class="secondary-header"><div class="secondary-title">Рулетка DOLIES</div><div class="secondary-subtitle">Ставка: 1$ • Призы: 0.1-100$</div></div>
+        <div style="background:#161618;border-radius:24px;padding:24px;text-align:center;"><div style="font-size:0.75rem;color:#707075;text-transform:uppercase;">Игровой баланс</div><div style="font-size:3rem;font-weight:800;color:#CAD4FC;" id="rouletteBalance">0.0$</div></div>
+        <div style="background:#161618;border-radius:28px;padding:28px 20px;text-align:center;"><div style="height:80px;background:#0A0A0B;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:800;color:#fff;border:2px solid transparent;" id="rouletteDisplay">?</div><button id="rouletteSpinBtn" style="width:100%;padding:18px;border-radius:20px;background:#CAD4FC;color:#0A0A0B;font-family:inherit;font-size:1.1rem;font-weight:800;text-transform:uppercase;cursor:pointer;border:none;margin-top:20px;">🎰 Крутить (1$)</button></div>
+      </div>
+    </div>
+
+    <!-- АВТО-ГАРАНТ -->
+    <div class="screen screen-guarantor" id="screenGuarantor">
+      <div class="screen-content" id="guarantorContent">
+        <button class="back-btn" id="guarantorBackBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>НАЗАД</button>
+        <div class="secondary-header"><div class="secondary-title">Авто-гарант</div><div class="secondary-subtitle">Безопасные сделки с защитой</div></div>
+        <div class="guarantor-robot"><div class="robot-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="10" r="4"/><path d="M8 18h8"/></svg></div><p class="guarantor-text">Авто-гарант обеспечивает безопасность сделок. Средства резервируются и переводятся только после выполнения условий.</p></div>
+        <button class="primary-button" id="createDealBtn">СОЗДАТЬ СДЕЛКУ</button>
+      </div>
+    </div>
+
+    <!-- СОЗДАНИЕ СДЕЛКИ -->
+    <div class="screen screen-create-deal" id="screenCreateDeal">
+      <div class="screen-content" id="createDealContent">
+        <button class="back-btn" id="createDealBackBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>НАЗАД</button>
+        <div class="secondary-header"><div class="secondary-title">Новая сделка</div><div class="secondary-subtitle">С пользователем: <span id="dealPartnerName" style="color:#CAD4FC;">@username</span></div></div>
+        <div class="create-deal-form">
+          <div class="form-group"><div class="form-label">Сумма сделки (USDT)</div><input type="number" class="form-input" id="dealAmount" placeholder="Например: 100" min="1" step="0.1"></div>
+          <div class="form-group"><div class="form-label">На что сделка</div><input type="text" class="form-input" id="dealSubject" placeholder="Например: Дизайн логотипа"></div>
+          <div class="form-group"><div class="form-label">Условия сделки</div><textarea class="form-textarea" id="dealConditions" placeholder="Опишите условия выполнения сделки..."></textarea></div>
+          <button class="primary-button" id="startDealBtn">НАЧАТЬ СДЕЛКУ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ОЖИДАНИЕ ПОДТВЕРЖДЕНИЯ -->
+    <div class="screen screen-deal-waiting" id="screenDealWaiting">
+      <div class="screen-content" id="dealWaitingContent">
+        <button class="back-btn" id="dealWaitingBackBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>НАЗАД</button>
+        <div class="secondary-header"><div class="secondary-title">Сделка создана</div><div class="secondary-subtitle">Ожидание подтверждения</div></div>
+        <div class="deal-waiting-card">
+          <div class="waiting-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="waiting-status">Ждем подтверждения от пользователя</div>
+          <div style="display:flex;flex-direction:column;gap:8px;padding:16px;background:#0A0A0B;border-radius:16px;">
+            <div style="display:flex;justify-content:space-between;color:#707075;font-size:0.8rem;"><span>Пользователь:</span><span style="color:#fff;" id="waitPartner">@username</span></div>
+            <div style="display:flex;justify-content:space-between;color:#707075;font-size:0.8rem;"><span>Сумма:</span><span style="color:#CAD4FC;" id="waitAmount">0 USDT</span></div>
+            <div style="display:flex;justify-content:space-between;color:#707075;font-size:0.8rem;"><span>Предмет:</span><span style="color:#fff;" id="waitSubject">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ПОИСКА -->
+    <div class="modal-overlay" id="searchModalOverlay">
+      <div class="modal">
+        <div class="modal-title">Поиск пользователя</div>
+        <input type="text" class="modal-input" id="searchUserInput" placeholder="Введите username или ID">
+        <button class="modal-btn" id="searchUserBtn">НАЙТИ</button>
+        <div id="searchResult" style="display:none;"></div>
+        <button class="modal-btn modal-cancel" id="cancelSearchBtn">ОТМЕНА</button>
+      </div>
+    </div>
+
+    <!-- НИЖНЯЯ ПЛАШКА -->
+    <div class="sticky-footer">
+      <div class="footer-guarantor-btn" id="footerGuarantorBtn" title="Авто-гарант"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="10" r="4"/><path d="M8 18h8"/></svg></div>
+      <div class="footer-knob" id="menuButton" title="Главное меню"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+      <div class="footer-roulette-btn" id="footerRouletteBtn" title="Рулетка"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 019.5 7.1"/><path d="M12 2v5"/></svg></div>
+    </div>
+
+    <!-- МЕНЮ -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+    <div class="slide-menu" id="slideMenu">
+      <div class="menu-handle"></div>
+      <div class="menu-title">Главное меню</div>
+      <div class="menu-items">
+        <button class="menu-item" id="menuProfileBtn"><div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><span>Мой профиль</span></button>
+        <button class="menu-item" id="menuDealsBtn"><div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/><path d="M2 21h20"/></svg></div><span>Мои сделки</span></button>
+        <button class="menu-item" id="menuHistoryBtn"><div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><span>История</span></button>
+        <button class="menu-item" id="menuSettingsBtn"><div class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><span>Настройки</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // ═══ API Конфигурация ═══
+      const API_URL = 'https://yourusername.pythonanywhere.com/api';
+      const tg = window.Telegram?.WebApp;
+      let userId = 482915673;
+      let username = '@dolies_user';
+      
+      if (tg) {
+        tg.ready();
+        if (tg.initDataUnsafe?.user) {
+          userId = tg.initDataUnsafe.user.id;
+          username = tg.initDataUnsafe.user.username ? '@' + tg.initDataUnsafe.user.username : '@user_' + userId;
+        }
+      }
+
+      // ═══ DOM элементы ═══
+      const screenMain = document.getElementById('screenMain');
+      const screenProfile = document.getElementById('screenProfile');
+      const screenDeals = document.getElementById('screenDeals');
+      const screenHistory = document.getElementById('screenHistory');
+      const screenRoulette = document.getElementById('screenRoulette');
+      const screenGuarantor = document.getElementById('screenGuarantor');
+      const screenCreateDeal = document.getElementById('screenCreateDeal');
+      const screenDealWaiting = document.getElementById('screenDealWaiting');
+      const menuButton = document.getElementById('menuButton');
+      const menuOverlay = document.getElementById('menuOverlay');
+      const slideMenu = document.getElementById('slideMenu');
+      const searchModalOverlay = document.getElementById('searchModalOverlay');
+      const allContents = ['mainContent','profileContent','dealsContent','historyContent','rouletteContent','guarantorContent','createDealContent','dealWaitingContent'].map(id => document.getElementById(id));
+
+      let foundUser = null;
+      let rouletteBalance = 50.0;
+      let isSpinning = false;
+      const PRIZES = [0.1, 0.2, 0.5, 1, 1.2, 2, 10, 100];
+
+      // ═══ API Функции ═══
+      async function apiCall(endpoint, method = 'GET', body = null) {
+        try {
+          const options = { method, headers: { 'Content-Type': 'application/json' } };
+          if (body) options.body = JSON.stringify(body);
+          const res = await fetch(`${API_URL}${endpoint}`, options);
+          return await res.json();
+        } catch (e) {
+          console.error('API Error:', e);
+          return null;
+        }
+      }
+
+      // ═══ Загрузка профиля ═══
+      async function loadProfile() {
+        const data = await apiCall(`/user/${userId}`);
+        if (data && !data.error) {
+          document.getElementById('profileNickname').textContent = data.username;
+          document.getElementById('profileId').textContent = 'ID: ' + data.user_id;
+          document.getElementById('profileDeposit').textContent = (data.deposit || 0).toLocaleString('ru-RU') + ' ₽';
+          document.getElementById('profileTotalDeals').textContent = data.total_deals || 0;
+          document.getElementById('profileCompleted').textContent = data.completed || 0;
+          document.getElementById('profileProcessing').textContent = data.processing || 0;
+          document.getElementById('profileCancelled').textContent = data.cancelled || 0;
+          rouletteBalance = data.roulette_balance || 50;
+          document.getElementById('rouletteBalance').textContent = rouletteBalance.toFixed(1) + '$';
+        }
+      }
+
+      // ═══ Загрузка сделок ═══
+      async function loadDeals() {
+        const data = await apiCall(`/deals/${userId}`);
+        const container = document.getElementById('dealsList');
+        if (data && data.length > 0) {
+          document.getElementById('dealsSubtitle').textContent = `Всего: ${data.length}`;
+          container.innerHTML = data.map(d => `
+            <div class="deal-card">
+              <div class="deal-top">
+                <div class="deal-user">
+                  <div class="deal-avatar-small"><svg viewBox="0 0 24 24" fill="none" stroke="#A0A0A8" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                  <div class="deal-user-info"><div class="deal-nickname">@partner_${d.partner_id}</div><div class="deal-user-id">ID: ${d.partner_id}</div></div>
+                </div>
+                <span class="deal-status ${d.status === 'completed' ? 'completed' : d.status === 'processing' ? 'processing' : 'cancelled'}">${d.status}</span>
+              </div>
+              <div class="deal-bottom"><div class="deal-amount">${d.amount} USDT</div><div class="deal-description">${d.subject}</div></div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<div style="color:#707075;text-align:center;">Нет сделок</div>';
+        }
+      }
+
+      // ═══ Загрузка истории ═══
+      async function loadHistory() {
+        const data = await apiCall(`/history/${userId}`);
+        const container = document.getElementById('historyList');
+        if (data) {
+          document.getElementById('historyTotal').textContent = (data.total || 0).toLocaleString('ru-RU') + ' ₽';
+          if (data.deposits && data.deposits.length > 0) {
+            container.innerHTML = data.deposits.map(d => `
+              <div class="history-card">
+                <div class="history-left">
+                  <div class="history-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+                  <div class="history-info"><div class="history-type">Пополнение депозита</div><div class="history-date">${new Date(d.created_at).toLocaleString('ru-RU')}</div></div>
+                </div>
+                <div class="history-right"><div class="history-amount">+${d.amount.toLocaleString('ru-RU')} ₽</div></div>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<div style="color:#707075;text-align:center;">Нет пополнений</div>';
+          }
+        }
+      }
+
+      // ═══ Рулетка с API ═══
+      async function spinRoulette() {
+        if (isSpinning || rouletteBalance < 1) return;
+        isSpinning = true;
+        document.getElementById('rouletteSpinBtn').disabled = true;
+        const display = document.getElementById('rouletteDisplay');
+        display.textContent = '...';
+        
+        // Анимация
+        let elapsed = 0;
+        const iv = setInterval(() => {
+          display.textContent = PRIZES[Math.floor(Math.random() * PRIZES.length)].toFixed(1) + '$';
+          elapsed += 80;
+          if (elapsed >= 2000) {
+            clearInterval(iv);
+            finishSpin();
+          }
+        }, 80);
+      }
+
+      async function finishSpin() {
+        const data = await apiCall('/roulette/spin', 'POST', { user_id: userId });
+        if (data && !data.error) {
+          document.getElementById('rouletteDisplay').textContent = data.prize.toFixed(1) + '$';
+          rouletteBalance = data.new_balance;
+          document.getElementById('rouletteBalance').textContent = rouletteBalance.toFixed(1) + '$';
+        }
+        isSpinning = false;
+        document.getElementById('rouletteSpinBtn').disabled = false;
+      }
+
+      // ═══ Создание сделки ═══
+      async function createDeal() {
+        const amount = document.getElementById('dealAmount').value;
+        const subject = document.getElementById('dealSubject').value;
+        const conditions = document.getElementById('dealConditions').value;
+        if (!amount || !subject || !conditions || !foundUser) { alert('Заполните все поля!'); return; }
+        
+        const data = await apiCall('/deal/create', 'POST', {
+          creator_id: userId,
+          partner_id: foundUser.id,
+          amount: parseFloat(amount),
+          subject,
+          conditions
+        });
+        
+        if (data && !data.error) {
+          document.getElementById('waitPartner').textContent = foundUser.username;
+          document.getElementById('waitAmount').textContent = amount + ' USDT';
+          document.getElementById('waitSubject').textContent = subject;
+          hideAllScreens();
+          screenDealWaiting.classList.add('active');
+          closeMenu();
+        }
+      }
+
+      // ═══ Навигация ═══
+      function hideAllScreens() {
+        screenMain.classList.add('hidden');
+        screenProfile.classList.remove('active');
+        screenDeals.classList.remove('active');
+        screenHistory.classList.remove('active');
+        screenRoulette.classList.remove('active');
+        screenGuarantor.classList.remove('active');
+        screenCreateDeal.classList.remove('active');
+        screenDealWaiting.classList.remove('active');
+      }
+
+      function showMain() { hideAllScreens(); screenMain.classList.remove('hidden'); closeMenu(); }
+      function showProfile() { hideAllScreens(); screenProfile.classList.add('active'); loadProfile(); closeMenu(); }
+      function showDeals() { hideAllScreens(); screenDeals.classList.add('active'); loadDeals(); closeMenu(); }
+      function showHistory() { hideAllScreens(); screenHistory.classList.add('active'); loadHistory(); closeMenu(); }
+      function showRoulette() { hideAllScreens(); screenRoulette.classList.add('active'); closeMenu(); }
+      function showGuarantor() { hideAllScreens(); screenGuarantor.classList.add('active'); closeMenu(); }
+      function showCreateDeal() { hideAllScreens(); screenCreateDeal.classList.add('active'); closeMenu(); }
+
+      // ═══ Обработчики кнопок ═══
+      document.getElementById('profileBackBtn').addEventListener('click', showMain);
+      document.getElementById('dealsBackBtn').addEventListener('click', showMain);
+      document.getElementById('historyBackBtn').addEventListener('click', showMain);
+      document.getElementById('rouletteBackBtn').addEventListener('click', showMain);
+      document.getElementById('guarantorBackBtn').addEventListener('click', showMain);
+      document.getElementById('createDealBackBtn').addEventListener('click', showGuarantor);
+      document.getElementById('dealWaitingBackBtn').addEventListener('click', showMain);
+      
+      document.getElementById('menuProfileBtn').addEventListener('click', showProfile);
+      document.getElementById('menuDealsBtn').addEventListener('click', showDeals);
+      document.getElementById('menuHistoryBtn').addEventListener('click', showHistory);
+      document.getElementById('menuSettingsBtn').addEventListener('click', () => { closeMenu(); alert('Настройки скоро будут добавлены'); });
+      document.getElementById('footerRouletteBtn').addEventListener('click', showRoulette);
+      document.getElementById('footerGuarantorBtn').addEventListener('click', showGuarantor);
+      document.getElementById('rouletteSpinBtn').addEventListener('click', spinRoulette);
+      document.getElementById('startDealBtn').addEventListener('click', createDeal);
+
+      // ═══ Поиск пользователя ═══
+      document.getElementById('createDealBtn').addEventListener('click', () => {
+        document.getElementById('searchResult').style.display = 'none';
+        document.getElementById('searchUserInput').value = '';
+        searchModalOverlay.classList.add('active');
+      });
+      
+      document.getElementById('cancelSearchBtn').addEventListener('click', () => searchModalOverlay.classList.remove('active'));
+      
+      document.getElementById('searchUserBtn').addEventListener('click', () => {
+        const query = document.getElementById('searchUserInput').value.trim();
+        if (!query) return;
+        foundUser = { username: query.startsWith('@') ? query : '@' + query, id: Math.floor(Math.random() * 900000000) + 100000000 };
+        const resultDiv = document.getElementById('searchResult');
+        resultDiv.innerHTML = `<div style="margin-top:12px;"><div class="found-user-card" id="selectFoundUser"><div style="width:40px;height:40px;border-radius:50%;background:#2C2C30;display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A0A8" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div style="font-weight:700;color:#fff;">${foundUser.username}</div><div style="font-size:0.7rem;color:#707075;">ID: ${foundUser.id}</div></div></div></div>`;
+        resultDiv.style.display = 'block';
+        document.getElementById('selectFoundUser').addEventListener('click', () => {
+          searchModalOverlay.classList.remove('active');
+          document.getElementById('dealPartnerName').textContent = foundUser.username;
+          showCreateDeal();
+        });
+      });
+
+      // ═══ Меню ═══
+      let menuOpen = false;
+      function openMenu() { menuOpen = true; menuOverlay.classList.add('active'); slideMenu.classList.add('active'); menuButton.classList.add('menu-active'); allContents.forEach(e => { if (e) e.style.filter = 'brightness(0.7)'; }); }
+      function closeMenu() { menuOpen = false; menuOverlay.classList.remove('active'); slideMenu.classList.remove('active'); menuButton.classList.remove('menu-active'); allContents.forEach(e => { if (e) e.style.filter = ''; }); }
+      menuButton.addEventListener('click', e => { e.stopPropagation(); menuOpen ? closeMenu() : openMenu(); });
+      menuOverlay.addEventListener('click', closeMenu);
+
+      // ═══ Слайдер ═══
+      const slides = document.getElementById('announceSlides'), dots = document.querySelectorAll('#paginationDots .dot');
+      let cur = 0;
+      function go(i) { cur = i; slides.style.transform = `translateX(-${i * 100}%)`; dots.forEach((d, j) => d.classList.toggle('active', j === i)); }
+      setInterval(() => { go((cur + 1) % dots.length); }, 5000);
+      dots.forEach(d => d.addEventListener('click', function() { go(+this.dataset.index); }));
+
+      // ═══ Инициализация ═══
+      loadProfile();
+      document.getElementById('profileNickname').textContent = username;
+      document.getElementById('profileId').textContent = 'ID: ' + userId;
+    })();
+  </script>
+</body>
+</html>
