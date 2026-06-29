@@ -4,7 +4,7 @@ import requests
 import time
 import threading
 
-TOKEN = "8874133675:AAHdZzVvTUNQNiP-Bt2RxvSOYfqqGBSXVDo"
+TOKEN = "8950946789:AAEvGNNj65P33VL4N9sVFIkNdJFKuCv3Hhk"
 CRYPTO_API = "59054:AAeYmni9Huqfd3L9jB05jquBxg5VLxFI7Vs"
 CRYPTO_BOT_URL = "https://testnet-pay.crypt.bot/api"
 API_URL = "https://dolies.pythonanywhere.com/api"
