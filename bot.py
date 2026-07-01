@@ -6,7 +6,6 @@ import threading
 from flask import Flask
 import os
 import logging
-import json
 import sys
 from datetime import datetime, timedelta
 from collections import OrderedDict
@@ -113,7 +112,7 @@ user_states = UserStateCache()
 
 # ===== ЭМОДЗИ =====
 S = {
-    'gem': '◇', 'game': '◎', 'wallet': '◻', 'check': '✓', 
+    'game': '◎', 'wallet': '◻', 'check': '✓', 
     'cross': '✗', 'star': '★', 'refresh': '↻', 'crown': '♛', 
     'globe': '◎', 'pen': '✎', 'dot': '·', 'rocket': '🚀',
     'money': '💎', 'error': '⚠️'
@@ -147,7 +146,7 @@ def create_invoice(amount):
     data = {
         "asset": "USDT",
         "amount": str(amount),
-        "description": f"DOLIES: {amount} USDT",
+        "description": f"DOLIES Casino: {amount} USDT",
         "paid_btn_name": "callback",
         "paid_btn_url": "https://t.me/dolies_bot"
     }
@@ -183,35 +182,36 @@ def check_invoice(invoice_id):
 def main_keyboard():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
-        types.KeyboardButton(f"{S['gem']} Пополнить депозит"),
-        types.KeyboardButton(f"{S['game']} Пополнить казино")
+        types.KeyboardButton(f"{S['game']} Пополнить казино"),
+        types.KeyboardButton(f"{S['wallet']} Баланс")
     )
     markup.add(
-        types.KeyboardButton(f"{S['wallet']} Баланс"),
         types.KeyboardButton(f"{S['globe']} Приложение")
     )
     return markup
 
-def amounts_keyboard(prefix):
-    currency = 'USDT' if prefix == 'dep' else '$'
+def amounts_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=2)
     
     for amount in [10, 25, 50, 100, 500]:
         markup.add(types.InlineKeyboardButton(
-            f"{amount} {currency}",
-            callback_data=f"{prefix}_{amount}"
+            f"{amount} USDT",
+            callback_data=f"casino_{amount}"
         ))
     
     markup.add(
-        types.InlineKeyboardButton(f"{S['pen']} Своя сумма", callback_data=f"{prefix}_custom"),
-        types.InlineKeyboardButton(f"{S['cross']} Отмена", callback_data=f"{prefix}_cancel")
+        types.InlineKeyboardButton(f"{S['pen']} Своя сумма", callback_data="casino_custom"),
+        types.InlineKeyboardButton(f"{S['cross']} Отмена", callback_data="casino_cancel")
     )
     return markup
 
-def payment_keyboard(invoice_url, check_data):
+def payment_keyboard(invoice_url, invoice_id):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton(f"{S['money']} Оплатить", url=invoice_url))
-    markup.add(types.InlineKeyboardButton(f"{S['refresh']} Проверить оплату", callback_data=check_data))
+    markup.add(types.InlineKeyboardButton(
+        f"{S['refresh']} Проверить оплату", 
+        callback_data=f"check_casino_{invoice_id}"
+    ))
     return markup
 
 # ===== ОБРАБОТЧИКИ КОМАНД =====
@@ -219,37 +219,26 @@ def payment_keyboard(invoice_url, check_data):
 def start_command(message):
     try:
         welcome_text = (
-            f"{S['rocket']} <b>DOLIES COMPANY</b> {S['rocket']}\n\n"
+            f"{S['rocket']} <b>BLACKJACK CASINO</b> {S['rocket']}\n\n"
             f"{S['star']} Добро пожаловать!\n\n"
+            f"{S['dot']} Пополните баланс и играйте в блэкджек\n"
             f"{S['dot']} Выберите действие в меню:"
         )
         bot.send_message(message.chat.id, welcome_text, reply_markup=main_keyboard(), parse_mode="HTML")
     except Exception as e:
         logger.error(f"Start error: {e}")
 
-@bot.message_handler(func=lambda m: m.text and "Пополнить депозит" in m.text)
-def deposit_start(message):
-    try:
-        bot.send_message(
-            message.chat.id,
-            f"{S['gem']} <b>ПОПОЛНЕНИЕ ДЕПОЗИТА</b>\n\nВыберите сумму <b>USDT</b>:",
-            reply_markup=amounts_keyboard('dep'),
-            parse_mode="HTML"
-        )
-    except Exception as e:
-        logger.error(f"Deposit start error: {e}")
-
 @bot.message_handler(func=lambda m: m.text and "Пополнить казино" in m.text)
-def casino_start(message):
+def casino_topup(message):
     try:
         bot.send_message(
             message.chat.id,
-            f"{S['game']} <b>ПОПОЛНЕНИЕ КАЗИНО</b>\n\nВыберите сумму <b>$</b>:",
-            reply_markup=amounts_keyboard('casino'),
+            f"{S['game']} <b>ПОПОЛНЕНИЕ КАЗИНО</b>\n\nВыберите сумму <b>USDT</b>:",
+            reply_markup=amounts_keyboard(),
             parse_mode="HTML"
         )
     except Exception as e:
-        logger.error(f"Casino start error: {e}")
+        logger.error(f"Casino topup error: {e}")
 
 @bot.message_handler(func=lambda m: m.text and "Баланс" in m.text)
 def check_balance(message):
@@ -262,13 +251,17 @@ def check_balance(message):
             return
         
         data = response.json()
-        deposit = data.get('deposit', 0)
-        roulette = data.get('roulette_balance', 0)
+        casino_balance = data.get('casino_balance', 0)
+        games_played = data.get('games_played', 0)
+        games_won = data.get('games_won', 0)
+        total_winnings = data.get('total_winnings', 0)
         
         balance_text = (
             f"{S['wallet']} <b>ВАШ БАЛАНС</b>\n\n"
-            f"{S['gem']} Депозит: <code>{deposit:,.2f} USDT</code>\n"
-            f"{S['game']} Казино: <code>{roulette:,.2f} $</code>"
+            f"{S['game']} Казино: <code>${casino_balance:,.2f}</code>\n"
+            f"{S['dot']} Игр сыграно: <b>{games_played}</b>\n"
+            f"{S['dot']} Побед: <b>{games_won}</b>\n"
+            f"{S['dot']} Выигрыш: <b>${total_winnings:,.2f}</b>"
         )
         
         bot.send_message(message.chat.id, balance_text, reply_markup=main_keyboard(), parse_mode="HTML")
@@ -280,10 +273,10 @@ def open_miniapp(message):
     try:
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton(
-            f"{S['rocket']} Открыть DOLIES",
+            f"{S['rocket']} Открыть BLACKJACK CASINO",
             web_app=types.WebAppInfo(url="https://dolies.pythonanywhere.com")
         ))
-        bot.send_message(message.chat.id, "Нажмите кнопку ниже:", reply_markup=markup)
+        bot.send_message(message.chat.id, "🎰 Нажмите кнопку ниже чтобы играть:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Miniapp error: {e}")
 
@@ -293,31 +286,28 @@ def handle_callback(call):
     try:
         data = call.data
         
-        if data.endswith('_cancel'):
+        if data == 'casino_cancel':
             bot.edit_message_text(f"{S['cross']} Отменено", call.message.chat.id, call.message.message_id)
             return
         
-        if data.endswith('_custom'):
-            prefix = data.split('_')[0]
-            user_states.set(call.from_user.id, f'waiting_{prefix}')
-            currency = 'USDT' if prefix == 'dep' else '$'
+        if data == 'casino_custom':
+            user_states.set(call.from_user.id, 'waiting_casino')
             bot.edit_message_text(
-                f"Введите сумму в {currency} (1-10000):",
+                f"Введите сумму в USDT (1-10000):",
                 call.message.chat.id,
                 call.message.message_id
             )
             return
         
-        if data.startswith(('dep_', 'casino_')):
+        if data.startswith('casino_'):
             parts = data.split('_')
             amount = float(parts[1])
-            pay_type = 'deposit' if parts[0] == 'dep' else 'casino'
-            create_payment(call.from_user.id, call.message, amount, pay_type)
+            create_payment(call.from_user.id, call.message, amount)
             return
         
-        if data.startswith('check_'):
-            _, pay_type, invoice_id = data.split('_', 2)
-            check_payment_status(call, pay_type, invoice_id)
+        if data.startswith('check_casino_'):
+            invoice_id = data.replace('check_casino_', '')
+            check_payment_status(call, invoice_id)
             return
         
     except Exception as e:
@@ -327,7 +317,7 @@ def handle_callback(call):
         except:
             pass
 
-def create_payment(user_id, message, amount, pay_type):
+def create_payment(user_id, message, amount):
     try:
         invoice = create_invoice(amount)
         
@@ -338,7 +328,7 @@ def create_payment(user_id, message, amount, pay_type):
         invoice_url = invoice['result']['pay_url']
         invoice_id = invoice['result']['invoice_id']
         
-        # Регистрируем в API
+        # Регистрируем инвойс в API
         try:
             requests.post(
                 f"{API_URL}/invoice/create",
@@ -346,19 +336,16 @@ def create_payment(user_id, message, amount, pay_type):
                     "user_id": user_id,
                     "invoice_id": invoice_id,
                     "amount": amount,
-                    "pay_type": pay_type
+                    "pay_type": "casino"
                 },
                 timeout=10
             )
         except:
             pass
         
-        currency = 'USDT' if pay_type == 'deposit' else '$'
-        check_data = f"check_{pay_type}_{invoice_id}"
-        
         payment_text = (
             f"{S['money']} <b>СЧЁТ СОЗДАН</b>\n\n"
-            f"Сумма: <code>{amount:.2f} {currency}</code>\n"
+            f"Сумма: <code>{amount:.2f} USDT</code>\n"
             f"ID: <code>{invoice_id}</code>\n\n"
             f"1. Нажмите <b>Оплатить</b>\n"
             f"2. Оплатите в CryptoBot\n"
@@ -370,21 +357,21 @@ def create_payment(user_id, message, amount, pay_type):
                 payment_text,
                 message.chat.id,
                 message.message_id,
-                reply_markup=payment_keyboard(invoice_url, check_data),
+                reply_markup=payment_keyboard(invoice_url, invoice_id),
                 parse_mode="HTML"
             )
         except:
             bot.send_message(
                 message.chat.id,
                 payment_text,
-                reply_markup=payment_keyboard(invoice_url, check_data),
+                reply_markup=payment_keyboard(invoice_url, invoice_id),
                 parse_mode="HTML"
             )
             
     except Exception as e:
         logger.error(f"Create payment error: {e}")
 
-def check_payment_status(call, pay_type, invoice_id):
+def check_payment_status(call, invoice_id):
     try:
         result = check_invoice(invoice_id)
         
@@ -395,7 +382,7 @@ def check_payment_status(call, pay_type, invoice_id):
         if result['result']['items'][0]['status'] == 'paid':
             user_id = call.from_user.id
             
-            # Проверяем и подтверждаем в нашей системе
+            # Подтверждаем в API
             try:
                 inv_response = requests.get(
                     f"{API_URL}/invoice/{invoice_id}",
@@ -412,24 +399,23 @@ def check_payment_status(call, pay_type, invoice_id):
                                 "user_id": user_id,
                                 "invoice_id": invoice_id,
                                 "amount": inv['amount'],
-                                "pay_type": pay_type
+                                "pay_type": "casino"
                             },
                             timeout=10
                         )
             except:
                 pass
             
-            # Получаем баланс
+            # Получаем обновлённый баланс
             user_response = make_request(requests.get, f"{API_URL}/user/{user_id}")
             
             if user_response:
                 data = user_response.json()
-                deposit = data.get('deposit', 0)
-                roulette = data.get('roulette_balance', 0)
+                casino_balance = data.get('casino_balance', 0)
                 text = (
                     f"{S['check']} <b>ОПЛАЧЕНО!</b>\n\n"
-                    f"{S['gem']} Депозит: <code>{deposit:,.2f} USDT</code>\n"
-                    f"{S['game']} Казино: <code>{roulette:,.2f} $</code>"
+                    f"{S['game']} Баланс казино: <code>${casino_balance:,.2f}</code>\n\n"
+                    f"Откройте приложение чтобы играть!"
                 )
             else:
                 text = f"{S['check']} <b>ОПЛАЧЕНО!</b>\nБаланс обновится автоматически."
@@ -442,7 +428,7 @@ def check_payment_status(call, pay_type, invoice_id):
         logger.error(f"Check payment error: {e}")
 
 # ===== ВВОД СВОЕЙ СУММЫ =====
-@bot.message_handler(func=lambda m: user_states.get(m.from_user.id) in ['waiting_dep', 'waiting_casino'])
+@bot.message_handler(func=lambda m: user_states.get(m.from_user.id) == 'waiting_casino')
 def custom_amount(message):
     try:
         state = user_states.pop(message.from_user.id)
@@ -459,18 +445,16 @@ def custom_amount(message):
             return
         
         if amount < 1 or amount > 10000:
-            bot.send_message(message.chat.id, f"{S['error']} Сумма от 1 до 10000")
+            bot.send_message(message.chat.id, f"{S['error']} Сумма от 1 до 10000 USDT")
             return
         
-        pay_type = 'deposit' if state == 'waiting_dep' else 'casino'
-        create_payment(message.from_user.id, message, amount, pay_type)
+        create_payment(message.from_user.id, message, amount)
         
     except Exception as e:
         logger.error(f"Custom amount error: {e}")
 
 # ===== АНТИ-СОН =====
 def keep_alive():
-    """Анти-сон для Render"""
     urls = [
         f"https://sms-45xq.onrender.com/ping",
         f"https://sms-45xq.onrender.com/health",
@@ -489,13 +473,12 @@ def keep_alive():
                 except Exception as e:
                     logger.warning(f"❌ Ping failed: {url}")
             
-            # Проверяем бота
             try:
                 bot.get_me()
             except:
                 logger.error("Bot connection lost")
             
-            time.sleep(600)  # Каждые 10 минут
+            time.sleep(600)
             
         except Exception as e:
             logger.error(f"Keep-alive error: {e}")
@@ -517,12 +500,10 @@ def run_bot():
 
 if __name__ == '__main__':
     print("=" * 50)
-    print("  DOLIES BOT v2.0")
+    print("  BLACKJACK CASINO BOT")
     print("=" * 50)
     
-    # Запускаем сервисы
     threading.Thread(target=keep_alive, daemon=True).start()
     threading.Thread(target=run_flask, daemon=True).start()
     
-    # Бот в главном потоке
     run_bot()
